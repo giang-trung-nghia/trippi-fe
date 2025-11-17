@@ -1,21 +1,22 @@
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import { GoogleSignInButton } from "@/features/auth/google-sign-in-button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
-type SignInParams = Record<string, string | string[] | undefined>
+type SignInParams = Record<string, string | string[] | undefined>;
 
 type SignInPageProps = {
-  searchParams?: Promise<SignInParams>
-}
+  searchParams?: Promise<SignInParams>;
+};
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
-  const resolvedParams = (await searchParams) ?? {}
-  const rawMode = resolvedParams.mode
-  const mode = Array.isArray(rawMode) ? rawMode[0] : rawMode
-  const highlightEmail = mode === "email"
+  const resolvedParams = (await searchParams) ?? {};
+  const rawMode = resolvedParams.mode;
+  const mode = Array.isArray(rawMode) ? rawMode[0] : rawMode;
+  const highlightEmail = mode === "email";
 
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-12">
@@ -71,17 +72,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           </div>
 
           <div className="space-y-3">
-            <Button variant="outline" className="w-full justify-center gap-2" type="button">
-              <Image
-                src="/icons/google.svg"
-                alt="Google logo"
-                width={20}
-                height={20}
-                aria-hidden="true"
-                className="size-5"
-              />
-              <span>Sign in with Google</span>
-            </Button>
+            <GoogleSignInButton />
             <Button
               variant="outline"
               className="w-full justify-center gap-2"
@@ -111,6 +102,5 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         </Button>
       </div>
     </main>
-  )
+  );
 }
-
