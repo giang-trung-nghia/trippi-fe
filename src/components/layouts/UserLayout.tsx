@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUserStore } from '@/store/use-user-store';
-import { CreateTripDialog } from '@/components/trips/create-trip-dialog';
+import { CreateTripDialog } from '@/features/trip/components/trips/create-trip-dialog';
 
 interface UserLayoutProps {
   children: ReactNode;
