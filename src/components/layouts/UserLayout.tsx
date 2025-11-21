@@ -1,13 +1,11 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useUserStore } from '@/store/use-user-store';
+import { Header } from '@/components/organisms/header';
 import { CreateTripDialog } from '@/features/trip/components/trips/create-trip-dialog';
 
 interface UserLayoutProps {
@@ -16,12 +14,6 @@ interface UserLayoutProps {
 
 export default function UserLayout({ children }: UserLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const router = useRouter();
-  const { isSignedIn, user, signOut } = useUserStore();
-
-  const handleSignInClick = () => router.push('/sign-in');
-  const handleSignUpClick = () => router.push('/sign-in?mode=email#email-option');
-  const userInitial = user?.name?.charAt(0).toUpperCase() ?? 'U';
 
   const sidebarItems = [
     { label: 'Dashboard', icon: '🏠' },
@@ -73,37 +65,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
       {/* Main */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-4">
-          <h1 className="font-bold text-xl">
-            {isSignedIn ? `Welcome back, ${user?.name ?? 'Explorer'}` : 'Welcome to Trippi'}
-          </h1>
-
-          <div className="flex items-center gap-4">
-            {isSignedIn ? (
-              <>
-                <Button variant="outline" size="sm">
-                  Notifications
-                </Button>
-                <Button variant="ghost" size="sm" onClick={signOut}>
-                  Sign out
-                </Button>
-                <Avatar>
-                  <AvatarImage src={user?.avatarUrl ?? '/avatar.png'} alt="User avatar" />
-                  <AvatarFallback>{userInitial}</AvatarFallback>
-                </Avatar>
-              </>
-            ) : (
-              <>
-                <Button variant="outline" size="sm" onClick={handleSignUpClick}>
-                  Sign up
-                </Button>
-                <Button size="sm" onClick={handleSignInClick}>
-                  Sign in
-                </Button>
-              </>
-            )}
-          </div>
-        </header>
+        <Header />
 
         {/* Content */}
         <main className="flex-1 p-4 overflow-auto">{children}</main>
