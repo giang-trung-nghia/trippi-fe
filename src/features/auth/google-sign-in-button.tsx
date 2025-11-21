@@ -5,32 +5,9 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { signInWithGoogle } from "@/services/auth";
 
 type GoogleSignInButtonProps = {
   className?: string;
-};
-
-const resolveRedirectUrl = (payload: unknown): string | undefined => {
-  if (!payload) {
-    return undefined;
-  }
-
-  if (typeof payload === "string") {
-    return payload;
-  }
-
-  if (typeof payload === "object") {
-    const data = payload as {
-      redirectUrl?: string;
-      url?: string;
-      href?: string;
-    };
-
-    return data.redirectUrl ?? data.url ?? data.href;
-  }
-
-  return undefined;
 };
 
 export function GoogleSignInButton({ className }: GoogleSignInButtonProps) {

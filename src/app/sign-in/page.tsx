@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { GoogleSignInButton } from "@/features/auth/google-sign-in-button";
+import { SignInForm } from "@/features/auth/sign-in-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 type SignInParams = Record<string, string | string[] | undefined>;
@@ -49,16 +49,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             </p>
           </div>
 
-          <div className="space-y-3">
-            <Input
-              type="email"
-              placeholder="you@example.com"
-              aria-label="Email address"
-            />
-            <Button className="w-full" type="button">
-              Continue with email
-            </Button>
-          </div>
+          <SignInForm />
         </section>
 
         <section className="space-y-4 rounded-2xl border bg-white p-6 shadow-sm">
