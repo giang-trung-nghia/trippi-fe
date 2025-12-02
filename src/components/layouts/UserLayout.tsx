@@ -3,10 +3,12 @@
 import { ReactNode, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Header } from '@/components/organisms/header';
 import { CreateTripDialog } from '@/features/trip/components/trips/create-trip-dialog';
+import { RecentTripsList } from '@/features/trip/components/trips/recent-trips-list';
 
 interface UserLayoutProps {
   children: ReactNode;
@@ -37,9 +39,28 @@ export default function UserLayout({ children }: UserLayoutProps) {
           </Button>
         </div>
 
-        <ScrollArea className="mt-4 h-[calc(100vh-64px)]">
-          <div className="flex flex-col gap-4 px-4 pb-4">
+        <div className="flex flex-col h-[calc(100vh-64px)]">
+          <div className="px-4 pt-4">
             <CreateTripDialog collapsed={collapsed} />
+          </div>
+
+          <Separator className="my-4" />
+
+          <div className="flex-1 overflow-hidden px-4">
+            <div className="mb-3">
+              <h3 className={cn(
+                "text-xs font-semibold text-muted-foreground uppercase tracking-wider",
+                collapsed && "sr-only"
+              )}>
+                Recent Trips
+              </h3>
+            </div>
+            <RecentTripsList collapsed={collapsed} />
+          </div>
+
+          <Separator className="my-4" />
+
+          <ScrollArea className="px-4 pb-4">
             <div className="flex flex-col gap-1">
               {sidebarItems.map((item) => (
                 <TooltipProvider key={item.label}>
@@ -58,17 +79,17 @@ export default function UserLayout({ children }: UserLayoutProps) {
                 </TooltipProvider>
               ))}
             </div>
-          </div>
-        </ScrollArea>
+          </ScrollArea>
+        </div>
       </aside>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <Header />
 
         {/* Content */}
-        <main className="flex-1 p-4 overflow-auto">{children}</main>
+        <main className="flex-1 p-4 overflow-y-auto overflow-x-hidden">{children}</main>
       </div>
     </div>
   );
