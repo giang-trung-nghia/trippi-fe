@@ -114,7 +114,7 @@ export function TripFormDialog({ open, onOpenChange, trip }: TripFormDialogProps
       destination: values.destination,
       startDate,
       endDate,
-      totalEstimatedCost: values.budget,
+      budget: values.budget,
       inviteEmails: values.inviteEmail && !isEditMode ? [values.inviteEmail] : undefined,
     }
 

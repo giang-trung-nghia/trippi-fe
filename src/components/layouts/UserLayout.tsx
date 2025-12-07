@@ -12,9 +12,10 @@ import { RecentTripsList } from '@/features/trip/components/trips/recent-trips-l
 
 interface UserLayoutProps {
   children: ReactNode;
+  className?: string;
 }
 
-export default function UserLayout({ children }: UserLayoutProps) {
+export default function UserLayout({ children, className }: UserLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const sidebarItems = [
@@ -89,7 +90,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
         <Header />
 
         {/* Content */}
-        <main className="flex-1 p-4 overflow-y-auto overflow-x-hidden">{children}</main>
+        <main className={cn('flex-1 p-4 overflow-y-auto overflow-x-hidden', className)}>{children}</main>
       </div>
     </div>
   );

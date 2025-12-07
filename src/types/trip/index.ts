@@ -66,7 +66,7 @@ export type TripItem = {
 export type TripDay = {
   id: string
   tripId: string
-  dayNumber: number
+  dayIndex: number
   date: string // YYYY-MM-DD
   title?: string
   description?: string
@@ -91,10 +91,10 @@ export type Trip = {
   
   startDate: string // YYYY-MM-DD
   endDate: string // YYYY-MM-DD
-  
   status: TripStatus
   members: TripMember[]
   days: TripDay[]
+  budget?: number
   totalEstimatedCost?: number
   totalActualCost?: number
   totalDays?: number
@@ -110,7 +110,7 @@ export type CreateTripPayload = {
   destination?: string
   startDate: string
   endDate: string
-  totalEstimatedCost?: number // Budget
+  budget?: number
   inviteEmails?: string[] // Invite members by email
 }
 

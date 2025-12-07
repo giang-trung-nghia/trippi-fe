@@ -1,23 +1,26 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from "react"
-import { useDroppable } from "@dnd-kit/core"
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { format } from "date-fns"
-import { Calendar, DollarSign, Clock, Plus } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
-import type { TripDay } from "@/types/trip"
-import { TripItemCard } from "./trip-item-card"
+import { useState, useEffect } from "react";
+import { useDroppable } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { format } from "date-fns";
+import { Calendar, DollarSign, Clock, Plus } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import type { TripDay } from "@/types/trip";
+import { TripItemCard } from "./trip-item-card";
 
 type TripDayColumnProps = {
-  day: TripDay
-  onToggleComplete?: (itemId: string) => void
-  onEditItem?: () => void
-  onAddItem?: (dayId: string) => void
-}
+  day: TripDay;
+  onToggleComplete?: (itemId: string) => void;
+  onEditItem?: () => void;
+  onAddItem?: (dayId: string) => void;
+};
 
 export function TripDayColumn({
   day,
@@ -25,14 +28,14 @@ export function TripDayColumn({
   onEditItem,
   onAddItem,
 }: TripDayColumnProps) {
-  const { setNodeRef, isOver } = useDroppable({ id: day.id })
-  const [formattedDate, setFormattedDate] = useState<string>("")
-  const itemIds = day.items.map((item) => item.id)
+  const { setNodeRef, isOver } = useDroppable({ id: day.id });
+  const [formattedDate, setFormattedDate] = useState<string>("");
+  const itemIds = day.items.map((item) => item.id);
 
   // Format date on client side only to prevent hydration mismatch
   useEffect(() => {
-    setFormattedDate(format(new Date(day.date), "EEE, MMM d"))
-  }, [day.date])
+    setFormattedDate(format(new Date(day.date), "EEE, MMM d"));
+  }, [day.date]);
 
   return (
     <Card
@@ -44,7 +47,7 @@ export function TripDayColumn({
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center justify-between">
           <div>
-            <div className="font-bold">Day {day.dayNumber}</div>
+            <div className="font-bold">Day {day.dayIndex}</div>
             {formattedDate && (
               <div className="text-sm text-muted-foreground font-normal flex items-center gap-1 mt-1">
                 <Calendar className="size-3" />
@@ -52,15 +55,18 @@ export function TripDayColumn({
               </div>
             )}
           </div>
-          {day.items.length > 0 && (
+          <div>
+            ${day.totalEstimatedCost?.toFixed(0)}
             <div className="text-xs text-muted-foreground font-normal">
               {day.items.length} {day.items.length === 1 ? "item" : "items"}
             </div>
-          )}
+          </div>
         </CardTitle>
 
         {day.title && (
-          <p className="text-sm font-medium text-foreground mt-2">{day.title}</p>
+          <p className="text-sm font-medium text-foreground mt-2">
+            {day.title}
+          </p>
         )}
 
         {day.description && (
@@ -78,7 +84,9 @@ export function TripDayColumn({
           {day.totalDuration > 0 && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <Clock className="size-3" />
-              <span>{Math.floor(day.totalDuration / 60)}h {day.totalDuration % 60}m</span>
+              <span>
+                {Math.floor(day.totalDuration / 60)}h {day.totalDuration % 60}m
+              </span>
             </div>
           )}
         </div>
@@ -94,7 +102,10 @@ export function TripDayColumn({
             isOver && "bg-accent/20 rounded-md"
           )}
         >
-          <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+          <SortableContext
+            items={itemIds}
+            strategy={verticalListSortingStrategy}
+          >
             {day.items.map((item) => (
               <TripItemCard
                 key={item.id}
@@ -118,6 +129,5 @@ export function TripDayColumn({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

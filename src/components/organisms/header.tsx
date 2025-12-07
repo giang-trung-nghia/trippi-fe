@@ -34,6 +34,12 @@ export function Header() {
           >
             Explore
           </Link>
+          <Link
+            href="/maps"
+            className="text-sm font-medium transition-colors hover:text-primary"
+          >
+            Maps
+          </Link>
         </nav>
 
         {/* Auth Section */}
