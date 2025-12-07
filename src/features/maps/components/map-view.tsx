@@ -10,6 +10,7 @@ import { MapControls } from "./map-controls"
 import { MapLegend } from "./map-legend"
 import { RoutePolyline } from "./route-polyline"
 import { AddPlaceDialog } from "./add-place-dialog"
+import { FitBounds } from "./fit-bounds"
 import type { Trip } from "@/types/trip"
 import type { MarkerData, MapTypeId, RouteStats, PlaceResult } from "@/features/maps/types"
 import { TripItemType } from "@/features/trip/enums/trip-item-type"
@@ -35,6 +36,7 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
   const [showLegend, setShowLegend] = useState(true)
   const [mapType, setMapType] = useState<MapTypeId>(DEFAULT_MAP_CONFIG.mapTypeId)
   const [routeStats, setRouteStats] = useState<RouteStats | null>(null)
+  const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0)
 
   // Stable map state - don't update during user interaction
   const [initialCenter] = useState(DEFAULT_MAP_CONFIG.center)
@@ -128,9 +130,10 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
   }, [])
 
   const handleFitBounds = useCallback(() => {
-    // This will be called when user clicks fit bounds button
-    // For now, it's a placeholder - can implement actual fitBounds later
-  }, [])
+    if (markers.length === 0) return
+    // Trigger fitBounds by incrementing the trigger value
+    setFitBoundsTrigger((prev) => prev + 1)
+  }, [markers])
 
   const handleToggleRoutes = useCallback(() => {
     setShowRoutes(prev => !prev)
@@ -213,6 +216,11 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
             path={routeCoordinates}
             onRouteCalculated={handleRouteCalculated}
           />
+        )}
+
+        {/* Fit Bounds - triggers when fitBoundsTrigger changes */}
+        {markers.length > 0 && (
+          <FitBounds markers={markers} trigger={fitBoundsTrigger} />
         )}
 
         {/* Map Controls */}
