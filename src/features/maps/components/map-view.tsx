@@ -16,6 +16,7 @@ import type { MarkerData, MapTypeId, RouteStats, PlaceResult } from "@/features/
 import { TripItemType } from "@/features/trip/enums/trip-item-type"
 import { MarkerColors } from "@/features/maps/enums"
 import { DEFAULT_MAP_CONFIG } from "@/features/maps/constants"
+import { useUserPreferencesStore } from "@/store/use-user-preferences-store"
 import {
   MapPin,
   Hotel,
@@ -33,10 +34,11 @@ type MapViewProps = {
 export function MapView({ trip, selectedDayId }: MapViewProps) {
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null)
   const [showRoutes, setShowRoutes] = useState(true)
-  const [showLegend, setShowLegend] = useState(true)
-  const [mapType, setMapType] = useState<MapTypeId>(DEFAULT_MAP_CONFIG.mapTypeId)
   const [routeStats, setRouteStats] = useState<RouteStats | null>(null)
   const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0)
+
+  // Get map preferences from store
+  const { mapShowLegend, mapType, setMapShowLegend, setMapType } = useUserPreferencesStore()
 
   // Stable map state - don't update during user interaction
   const [initialCenter] = useState(DEFAULT_MAP_CONFIG.center)
@@ -226,10 +228,10 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
         {/* Map Controls */}
         <MapControls
           showRoutes={showRoutes}
-          showLegend={showLegend}
+          showLegend={mapShowLegend}
           mapType={mapType}
           onToggleRoutes={handleToggleRoutes}
-          onToggleLegend={() => setShowLegend(!showLegend)}
+          onToggleLegend={() => setMapShowLegend(!mapShowLegend)}
           onMapTypeChange={setMapType}
           onFitBounds={handleFitBounds}
           markerCount={markers.length}
@@ -237,7 +239,7 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
         />
 
         {/* Legend */}
-        {showLegend && <MapLegend />}
+        {mapShowLegend && <MapLegend />}
 
         {/* Add Place Button */}
         <AddPlaceDialog onPlaceAdd={handlePlaceAdd} />

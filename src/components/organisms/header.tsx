@@ -17,11 +17,12 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center space-x-2"></div>
+      <div className="relative flex h-16 items-center">
+        {/* Left spacer - takes up space but empty */}
+        <div className="flex-1"></div>
 
-        {/* Navigation */}
-        <nav className="flex items-center gap-6">
+        {/* Navigation - Always centered */}
+        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-6">
           <Link
             href="/trips"
             className="text-sm font-medium transition-colors hover:text-primary"
@@ -42,21 +43,21 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* Auth Section */}
-        <div className="flex items-center gap-3">
+        {/* Auth Section - Always at the end */}
+        <div className="flex-1 flex items-center justify-end pr-4">
           {isLoading ? (
             <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
           ) : isAuthenticated ? (
             <UserMenu />
           ) : (
-            <>
+            <div className="flex items-center gap-3">
               <Button variant="ghost" asChild>
                 <Link href="/sign-in">Sign in</Link>
               </Button>
               <Button asChild>
                 <Link href="/sign-in?mode=signup">Sign up</Link>
               </Button>
-            </>
+            </div>
           )}
         </div>
       </div>
