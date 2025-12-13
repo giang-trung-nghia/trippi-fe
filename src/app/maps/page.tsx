@@ -6,12 +6,14 @@ import { MapView } from "@/features/maps/components/map-view"
 import { MapSidebar } from "@/features/maps/components/map-sidebar"
 import { mockTrip } from "@/mocks/trip-data"
 import type { Trip } from "@/types/trip"
+import { useLocaleStore } from "@/store/use-locale-store"
 
 export default function MapsPage() {
   const [selectedTrip] = useState<Trip>(mockTrip)
   const [selectedDayId, setSelectedDayId] = useState<string | null>(
     mockTrip.days[0]?.id || null
   )
+  const languageCode = useLocaleStore((state) => state.languageCode)
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
@@ -21,8 +23,8 @@ export default function MapsPage() {
   }
 
   return (
-    <APIProvider apiKey={apiKey}>
-      <div className="flex h-[calc(100vh-4rem)] w-full overflow-hidden">
+    <APIProvider apiKey={apiKey} language={languageCode}>
+      <div className="flex h-full w-full overflow-hidden">
         {/* Sidebar */}
         <MapSidebar
           trip={selectedTrip}
@@ -31,7 +33,7 @@ export default function MapsPage() {
         />
 
         {/* Map Container - Takes remaining space */}
-        <div className="flex-1 relative min-w-0">
+        <div className="flex-1 relative min-w-0 overflow-hidden">
           <MapView trip={selectedTrip} selectedDayId={selectedDayId} />
         </div>
       </div>

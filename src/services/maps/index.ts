@@ -6,6 +6,7 @@
 import { routesApiClient, placesApiClient, geocodingApiClient } from "@/configs/google-maps-axios"
 import type { RoutesAPIRequest, RoutesAPIResponse } from "@/features/maps/types"
 import { API_CONFIG } from "@/features/maps/constants"
+import { getCurrentLocale, getCurrentLanguageCode } from "@/store/use-locale-store"
 
 // ============================================================================
 // Routes API
@@ -70,7 +71,7 @@ export const calculateRoute = async (
       avoidHighways: options?.avoidHighways || false,
       avoidFerries: options?.avoidFerries || false,
     },
-    languageCode: "en-US",
+    languageCode: getCurrentLocale(),
     units: "METRIC",
   }
 
@@ -133,7 +134,7 @@ export const calculateAlternativeRoutes = async (
       avoidHighways: options?.avoidHighways || false,
       avoidFerries: options?.avoidFerries || false,
     },
-    languageCode: "en-US",
+    languageCode: getCurrentLocale(),
     units: "METRIC",
   }
 
@@ -184,6 +185,14 @@ export const searchPlaces = async (
     maxResultCount?: number
   }
 ): Promise<PlaceSearchResult> => {
+  // Get current locale - ensure it's Vietnamese by default
+  const locale = getCurrentLocale()
+  
+  // Debug log to verify locale is correct
+  if (process.env.NODE_ENV === "development") {
+    console.log("[searchPlaces] Using locale:", locale, "for query:", query)
+  }
+
   const requestBody = {
     textQuery: query,
     locationBias: options?.location
@@ -198,7 +207,7 @@ export const searchPlaces = async (
         }
       : undefined,
     maxResultCount: options?.maxResultCount || 10,
-    languageCode: "en-US",
+    languageCode: locale,
   }
 
   const response = await placesApiClient.post<PlaceSearchResult>(
@@ -253,9 +262,12 @@ export type GeocodingResult = {
  * Geocode an address to coordinates
  */
 export const geocodeAddress = async (address: string): Promise<GeocodingResult> => {
+  const language = getCurrentLanguageCode() // Geocoding API uses language code only (e.g., "vi" or "en")
+  
   const response = await geocodingApiClient.get<GeocodingResult>("/geocode/json", {
     params: {
       address,
+      language,
       key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
     },
   })
@@ -270,9 +282,12 @@ export const reverseGeocode = async (
   lat: number,
   lng: number
 ): Promise<GeocodingResult> => {
+  const language = getCurrentLanguageCode() // Geocoding API uses language code only (e.g., "vi" or "en")
+  
   const response = await geocodingApiClient.get<GeocodingResult>("/geocode/json", {
     params: {
       latlng: `${lat},${lng}`,
+      language,
       key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
     },
   })

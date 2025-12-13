@@ -7,7 +7,7 @@ export default function MapsLayout({
 }) {
   return (
     <UserLayout className="p-0">
-      <div className="h-full w-full">{children}</div>
+      <div className="h-full w-full overflow-hidden">{children}</div>
     </UserLayout>
   );
 }
