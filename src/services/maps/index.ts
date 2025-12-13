@@ -238,6 +238,101 @@ export const getPlaceDetails = async (placeId: string) => {
   return response.data
 }
 
+/**
+ * Search for places near a location (for POI clicks)
+ * Uses Places API (New) nearby search endpoint
+ */
+export const searchNearby = async (
+  location: google.maps.LatLngLiteral,
+  options?: {
+    radius?: number
+    maxResultCount?: number
+  }
+): Promise<PlaceSearchResult> => {
+  const locale = getCurrentLocale()
+
+  // Places API (New) searchNearby requires includedTypes
+  // Note: point_of_interest and establishment are LEGACY types and NOT supported
+  // We use a comprehensive list of valid types to find any place
+  const requestBody = {
+    includedTypes: [
+      "restaurant",
+      "tourist_attraction",
+      "lodging",
+      "store",
+      "cafe",
+      "bar",
+      "museum",
+      "park",
+      "shopping_mall",
+      "gas_station",
+      "bank",
+      "hospital",
+      "pharmacy",
+      "supermarket",
+      "atm",
+      "subway_station",
+      "bus_station",
+      "train_station",
+      "airport",
+      "church",
+      "mosque",
+      "zoo",
+      "aquarium",
+      "stadium",
+      "movie_theater",
+      "night_club",
+      "gym",
+      "spa",
+      "beauty_salon",
+      "hair_care",
+      "car_rental",
+      "car_repair",
+      "car_wash",
+      "parking",
+      "rv_park",
+      "campground",
+      "library",
+      "school",
+      "university",
+      "police",
+      "fire_station",
+      "post_office",
+      "courthouse",
+      "city_hall",
+    ],
+    maxResultCount: options?.maxResultCount || 1,
+    locationRestriction: {
+      circle: {
+        center: {
+          latitude: location.lat,
+          longitude: location.lng,
+        },
+        radius: options?.radius || 100, // Small radius (100m) to find exact place
+      },
+    },
+    languageCode: locale,
+  }
+
+  // Debug: Log the request to verify no legacy types are included
+  if (process.env.NODE_ENV === "development") {
+    console.log("[searchNearby] Request body:", JSON.stringify(requestBody, null, 2))
+  }
+
+  const response = await placesApiClient.post<PlaceSearchResult>(
+    "/places:searchNearby",
+    requestBody,
+    {
+      headers: {
+        "X-Goog-FieldMask":
+          "places.id,places.formattedAddress,places.displayName,places.location,places.types",
+      },
+    }
+  )
+
+  return response.data
+}
+
 // ============================================================================
 // Geocoding API
 // ============================================================================
