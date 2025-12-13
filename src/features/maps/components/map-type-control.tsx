@@ -31,11 +31,11 @@ export function MapTypeControl({
     mapTypeOptions.find((t) => t.value === mapType)?.label || "Roadmap"
 
   return (
-    <div className="rounded-lg bg-white shadow-lg">
+    <div className="w-[120px] rounded-lg bg-white shadow-lg">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="gap-2">
-            <Layers2 className="h-4 w-4" />
+          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-3">
+            <Layers2 className="h-4 w-4 shrink-0" />
             <span className="text-xs">{currentLabel}</span>
           </Button>
         </DropdownMenuTrigger>

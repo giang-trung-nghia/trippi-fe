@@ -9,10 +9,11 @@ import {
 import { MapControls } from "./map-controls"
 import { MapLegend } from "./map-legend"
 import { RoutePolyline } from "./route-polyline"
-import { AddPlaceDialog } from "./add-place-dialog"
+import { PlaceAutocomplete } from "./place-autocomplete"
 import { FitBounds } from "./fit-bounds"
+import { Button } from "@/components/ui/button"
 import type { Trip } from "@/types/trip"
-import type { MarkerData, MapTypeId, RouteStats, PlaceResult } from "@/features/maps/types"
+import type { MarkerData, RouteStats, PlaceResult } from "@/features/maps/types"
 import { TripItemType } from "@/features/trip/enums/trip-item-type"
 import { MarkerColors } from "@/features/maps/enums"
 import { DEFAULT_MAP_CONFIG } from "@/features/maps/constants"
@@ -24,6 +25,7 @@ import {
   Compass,
   Bus,
   Landmark,
+  Plus,
 } from "lucide-react"
 
 type MapViewProps = {
@@ -33,12 +35,20 @@ type MapViewProps = {
 
 export function MapView({ trip, selectedDayId }: MapViewProps) {
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null)
+  const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null)
+  const [selectedPlacePosition, setSelectedPlacePosition] = useState<google.maps.LatLngLiteral | null>(null)
   const [showRoutes, setShowRoutes] = useState(true)
   const [routeStats, setRouteStats] = useState<RouteStats | null>(null)
   const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0)
 
   // Get map preferences from store
   const { mapShowLegend, mapType, setMapShowLegend, setMapType } = useUserPreferencesStore()
+
+  // Get selected day
+  const selectedDay = useMemo(() => {
+    if (!selectedDayId) return null
+    return trip.days.find((day) => day.id === selectedDayId) || null
+  }, [trip.days, selectedDayId])
 
   // Stable map state - don't update during user interaction
   const [initialCenter] = useState(DEFAULT_MAP_CONFIG.center)
@@ -120,12 +130,35 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
     }
   }
 
-  const handlePlaceAdd = (place: PlaceResult) => {
+  const handlePlaceAdd = useCallback((place: PlaceResult) => {
     // In a real app, this would add the place to the trip
     console.log("Place added:", place)
+    console.log("Selected day:", selectedDay)
+    
+    // Close info panels
+    setSelectedPlace(null)
+    setSelectedPlacePosition(null)
+    setSelectedMarker(null)
+    
     // You could show a toast notification here
-    alert(`Added "${place.name}" to your trip!`)
-  }
+    alert(`Added "${place.name}" to ${selectedDay ? `Day ${selectedDay.dayIndex}` : "your trip"}!`)
+  }, [selectedDay])
+
+  const handlePlaceSelect = useCallback((place: PlaceResult) => {
+    setSelectedPlace(place)
+    setSelectedPlacePosition(place.location)
+    setSelectedMarker(null) // Close marker info if open
+  }, [])
+
+  const handlePlaceInfo = useCallback((place: PlaceResult) => {
+    setSelectedPlace(place)
+    setSelectedPlacePosition(place.location)
+  }, [])
+
+  const handleClosePlaceInfo = useCallback(() => {
+    setSelectedPlace(null)
+    setSelectedPlacePosition(null)
+  }, [])
 
   const handleRouteCalculated = useCallback((distance: string, duration: string) => {
     setRouteStats({ distance, duration })
@@ -154,6 +187,7 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
         gestureHandling="greedy"
         fullscreenControl={false}
         streetViewControl={false}
+        mapTypeControl={false}
         disableDefaultUI={false}
         mapId="trippi-map"
         className="h-full w-full"
@@ -175,26 +209,29 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
           )
         })}
 
-        {/* Info Window */}
         {selectedMarker && (
           <InfoWindow
             position={selectedMarker.position}
             onCloseClick={() => setSelectedMarker(null)}
           >
-            <div className="p-2">
-              <h3 className="font-semibold text-gray-900">
-                {selectedMarker.item.name}
-              </h3>
-              {selectedMarker.item.placeName && (
-                <p className="text-sm text-gray-600">
-                  {selectedMarker.item.placeName}
-                </p>
-              )}
-              {selectedMarker.item.address && (
-                <p className="mt-1 text-xs text-gray-500">
-                  {selectedMarker.item.address}
-                </p>
-              )}
+            <div className="p-3 min-w-[200px]">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 text-sm">
+                    {selectedMarker.item.name}
+                  </h3>
+                  {selectedMarker.item.placeName && (
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      {selectedMarker.item.placeName}
+                    </p>
+                  )}
+                  {selectedMarker.item.address && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      {selectedMarker.item.address}
+                    </p>
+                  )}
+                </div>
+              </div>
               {selectedMarker.item.startTime && (
                 <p className="mt-1 text-xs font-medium text-blue-600">
                   {selectedMarker.item.startTime}
@@ -203,15 +240,82 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
                 </p>
               )}
               {selectedMarker.item.description && (
-                <p className="mt-2 text-sm text-gray-700">
+                <p className="mt-2 text-xs text-gray-700">
                   {selectedMarker.item.description}
                 </p>
               )}
+              <Button
+                onClick={() => {
+                  // Convert marker item to PlaceResult and add
+                  const place: PlaceResult = {
+                    placeId: selectedMarker.item.placeId || "",
+                    name: selectedMarker.item.name,
+                    formattedAddress: selectedMarker.item.address || "",
+                    location: selectedMarker.item.location || selectedMarker.position,
+                    types: [],
+                  }
+                  handlePlaceAdd(place)
+                }}
+                className="w-full mt-3 gap-2"
+                size="sm"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add to Trip</span>
+              </Button>
             </div>
           </InfoWindow>
         )}
 
-        {/* Routes */}
+        {selectedPlace && selectedPlacePosition && (
+          <>
+            <Marker
+              position={selectedPlacePosition}
+              icon={{
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 12,
+                fillColor: "#3b82f6",
+                fillOpacity: 1,
+                strokeColor: "#ffffff",
+                strokeWeight: 2,
+              }}
+            />
+            <InfoWindow
+              position={selectedPlacePosition}
+              onCloseClick={handleClosePlaceInfo}
+            >
+              <div className="p-3 min-w-[250px]">
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 text-base">
+                      {selectedPlace.name}
+                    </h3>
+                    {selectedPlace.formattedAddress && (
+                      <div className="mt-1 flex items-start gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 text-gray-400 mt-0.5 shrink-0" />
+                        <p className="text-xs text-gray-600 line-clamp-2">
+                          {selectedPlace.formattedAddress}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  onClick={() => handlePlaceAdd(selectedPlace)}
+                  className="w-full gap-2"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>
+                    {selectedDay
+                      ? `Add to Day ${selectedDay.dayIndex}`
+                      : "Add to Trip"}
+                  </span>
+                </Button>
+              </div>
+            </InfoWindow>
+          </>
+        )}
+
         {showRoutes && routeCoordinates.length > 1 && (
           <RoutePolyline
             key={routeKey}
@@ -220,12 +324,10 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
           />
         )}
 
-        {/* Fit Bounds - triggers when fitBoundsTrigger changes */}
         {markers.length > 0 && (
           <FitBounds markers={markers} trigger={fitBoundsTrigger} />
         )}
 
-        {/* Map Controls */}
         <MapControls
           showRoutes={showRoutes}
           showLegend={mapShowLegend}
@@ -238,12 +340,18 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
           routeStats={routeStats}
         />
 
-        {/* Legend */}
         {mapShowLegend && <MapLegend />}
-
-        {/* Add Place Button */}
-        <AddPlaceDialog onPlaceAdd={handlePlaceAdd} />
       </Map>
+
+      <div className="absolute left-4 top-4 z-10">
+        <PlaceAutocomplete
+          onPlaceSelect={handlePlaceSelect}
+          onPlaceInfo={handlePlaceInfo}
+          placeholder="Search places..."
+          className="w-[500px]"
+        />
+      </div>
+
     </div>
   )
 }

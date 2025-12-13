@@ -22,7 +22,7 @@ export default function MapsPage() {
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div className="relative h-[calc(100vh-4rem)] w-full overflow-hidden">
+      <div className="flex h-[calc(100vh-4rem)] w-full overflow-hidden">
         {/* Sidebar */}
         <MapSidebar
           trip={selectedTrip}
@@ -30,8 +30,10 @@ export default function MapsPage() {
           onDaySelect={setSelectedDayId}
         />
 
-        {/* Map */}
-        <MapView trip={selectedTrip} selectedDayId={selectedDayId} />
+        {/* Map Container - Takes remaining space */}
+        <div className="flex-1 relative min-w-0">
+          <MapView trip={selectedTrip} selectedDayId={selectedDayId} />
+        </div>
       </div>
     </APIProvider>
   )

@@ -1,11 +1,14 @@
 // Map Components
 export { MapView } from "./map-view"
 export { MapSidebar } from "./map-sidebar"
+export { DayCard } from "./day-card"
 export { MapControls } from "./map-controls"
 export { MapLegend } from "./map-legend"
 export { MapTypeControl } from "./map-type-control"
 export { RoutePolyline } from "./route-polyline"
 export { PlaceSearch } from "./place-search"
+export { PlaceAutocomplete } from "./place-autocomplete"
+export { PlaceInfoPanel } from "./place-info-panel"
 export { AddPlaceDialog } from "./add-place-dialog"
 
 // Re-export types and enums for convenience
