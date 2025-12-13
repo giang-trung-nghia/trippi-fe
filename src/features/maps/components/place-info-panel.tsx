@@ -78,10 +78,13 @@ export function PlaceInfoPanel({
 
   // Debug log
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      console.log("[PlaceInfoPanel] Rendering panel for:", place.name, "pixelPosition:", pixelPosition)
-    }
-  }, [place.name, pixelPosition])
+    console.log("[PlaceInfoPanel] Component mounted/updated:", {
+      placeName: place.name,
+      position,
+      pixelPosition,
+      hasMap: !!map,
+    })
+  }, [place.name, position, pixelPosition, map])
 
   if (!pixelPosition) {
     // Return a placeholder while calculating position

@@ -208,7 +208,7 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
         streetViewControl={false}
         mapTypeControl={false}
         disableDefaultUI={false}
-        clickableIcons={true}
+        clickableIcons={false}
         mapId="trippi-map"
         className="h-full w-full"
       >
@@ -228,33 +228,36 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
               color={color}
               label={`${index + 1}`}
               onClick={() => {
+                console.log("[MapView] Marker clicked:", markerData.item.name)
                 setSelectedMarker(markerData)
+                // Also close any place selection
+                setSelectedPlace(null)
+                setSelectedPlacePosition(null)
               }}
             />
           )
         })}
 
         {/* PlaceInfoPanel for selected marker - rendered inside Map for useMap hook */}
-        {selectedMarker && (() => {
-          // Convert marker item to PlaceResult for PlaceInfoPanel
-          const place: PlaceResult = {
-            placeId: selectedMarker.item.placeId || "",
-            name: selectedMarker.item.name,
-            formattedAddress: selectedMarker.item.address || selectedMarker.item.placeName || "",
-            location: selectedMarker.item.location || selectedMarker.position,
-            types: [],
-          }
-          
-          return (
-            <PlaceInfoPanel
-              place={place}
-              position={selectedMarker.position}
-              onClose={() => setSelectedMarker(null)}
-              onAddToTrip={handlePlaceAdd}
-              selectedDay={selectedDay}
-            />
-          )
-        })()}
+        {selectedMarker && (
+          <PlaceInfoPanel
+            key={`marker-${selectedMarker.item.id}`}
+            place={{
+              placeId: selectedMarker.item.placeId || "",
+              name: selectedMarker.item.name,
+              formattedAddress: selectedMarker.item.address || selectedMarker.item.placeName || "",
+              location: selectedMarker.item.location || selectedMarker.position,
+              types: [],
+            }}
+            position={selectedMarker.position}
+            onClose={() => {
+              console.log("[MapView] Closing marker panel")
+              setSelectedMarker(null)
+            }}
+            onAddToTrip={handlePlaceAdd}
+            selectedDay={selectedDay}
+          />
+        )}
 
         {/* PlaceInfoPanel for selected place (from autocomplete or POI click) */}
         {selectedPlace && selectedPlacePosition && (

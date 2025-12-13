@@ -21,30 +21,17 @@ export function MapPoiClickHandler({ onPlaceClick }: MapPoiClickHandlerProps) {
   useEffect(() => {
     if (!map) return
 
-    // Hide default Google Maps info windows using CSS
+    // Simplified approach: Just hide info windows with CSS
+    // Don't use MutationObserver as it might be too aggressive
     const hideDefaultInfoWindows = () => {
-      // Hide Google Maps default info windows and all related elements
       const style = document.createElement("style")
       style.id = "hide-google-maps-info-windows"
       style.textContent = `
-        /* Hide Google Maps default info windows completely */
+        /* Hide Google Maps default info windows */
         .gm-style-iw,
         .gm-style-iw-c,
         .gm-style-iw-d,
-        .gm-style-iw-t,
-        .gm-ui-hover-effect,
-        .gm-style-iw.gm-style-iw-c,
-        div[style*="position: absolute"][style*="z-index: 1000"]:has(.gm-style-iw),
-        /* Hide info window arrows */
-        .gm-style-iw-t::after,
-        .gm-style-iw-t::before {
-          display: none !important;
-          visibility: hidden !important;
-          opacity: 0 !important;
-          pointer-events: none !important;
-        }
-        /* Also hide any divs that look like info windows */
-        div[class*="gm-style"][class*="iw"] {
+        .gm-style-iw-t {
           display: none !important;
         }
       `
@@ -54,40 +41,6 @@ export function MapPoiClickHandler({ onPlaceClick }: MapPoiClickHandlerProps) {
     }
 
     hideDefaultInfoWindows()
-
-    const mapDiv = map.getDiv()
-
-    // Use MutationObserver to continuously hide any info windows that appear
-    const observer = new MutationObserver(() => {
-      // Hide any info windows that appear
-      const infoWindows = document.querySelectorAll(
-        '.gm-style-iw, .gm-style-iw-c, .gm-style-iw-d, .gm-style-iw-t, [class*="gm-style"][class*="iw"]'
-      )
-      infoWindows.forEach((el) => {
-        if (el instanceof HTMLElement) {
-          el.style.display = 'none'
-          el.style.visibility = 'hidden'
-          el.style.opacity = '0'
-          el.style.pointerEvents = 'none'
-        }
-      })
-
-      // Also hide info window arrows
-      const arrows = document.querySelectorAll('.gm-style-iw-t::after, .gm-style-iw-t::before')
-      arrows.forEach((el) => {
-        if (el instanceof HTMLElement) {
-          el.style.display = 'none'
-        }
-      })
-    })
-
-    // Observe the map container for changes
-    observer.observe(mapDiv, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'style'],
-    })
 
     // Listen to Google Maps click event
     // When user clicks on a POI, Google Maps will trigger this event
@@ -179,7 +132,6 @@ export function MapPoiClickHandler({ onPlaceClick }: MapPoiClickHandlerProps) {
     })
 
     return () => {
-      observer.disconnect()
       if (mapClickListener) {
         google.maps.event.removeListener(mapClickListener)
       }
