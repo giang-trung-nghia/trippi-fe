@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react"
 import { useMap } from "@vis.gl/react-google-maps"
 import { Plus, MapPin, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import type { PlaceResult } from "@/features/maps/types"
 import type { TripDay } from "@/types/trip"
 
@@ -34,7 +33,6 @@ export function PlaceInfoPanel({
       const projection = map.getProjection()
       if (!projection) return
 
-      const scale = Math.pow(2, map.getZoom() || 10)
       const worldCoordinate = projection.fromLatLngToPoint(
         new google.maps.LatLng(position.lat, position.lng)
       )
@@ -78,7 +76,24 @@ export function PlaceInfoPanel({
     }
   }, [map, position])
 
-  if (!pixelPosition) return null
+  // Debug log
+  useEffect(() => {
+    console.log("[PlaceInfoPanel] Component mounted/updated:", {
+      placeName: place.name,
+      position,
+      pixelPosition,
+      hasMap: !!map,
+    })
+  }, [place.name, position, pixelPosition, map])
+
+  if (!pixelPosition) {
+    // Return a placeholder while calculating position
+    return (
+      <div className="absolute z-50 opacity-0 pointer-events-none">
+        {/* Placeholder to prevent layout shift */}
+      </div>
+    )
+  }
 
   return (
     <div
