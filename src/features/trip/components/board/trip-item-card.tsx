@@ -84,7 +84,7 @@ export function TripItemCard({ item, onToggleComplete, onEdit }: TripItemCardPro
                     item.isCompleted && "line-through text-muted-foreground"
                   )}
                 >
-                  {item.name}
+                  {item.customName || item.name}
                 </h4>
               </div>
 
@@ -101,7 +101,7 @@ export function TripItemCard({ item, onToggleComplete, onEdit }: TripItemCardPro
                 <Clock className="size-3" />
                 <span>
                   {item.startTime} - {item.endTime}
-                  {item.duration && ` (${item.duration} min)`}
+                  {item.durationMinutes && ` (${item.durationMinutes} min)`}
                 </span>
               </div>
             )}
@@ -113,23 +113,16 @@ export function TripItemCard({ item, onToggleComplete, onEdit }: TripItemCardPro
               </div>
             )}
 
-            {item.estimatedCost !== undefined && (
+            {item.cost !== undefined && item.cost !== null && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <DollarSign className="size-3" />
-                <span>
-                  ${item.estimatedCost.toFixed(2)}
-                  {item.actualCost !== undefined && item.actualCost !== item.estimatedCost && (
-                    <span className="ml-1 text-green-600">
-                      (Actual: ${item.actualCost.toFixed(2)})
-                    </span>
-                  )}
-                </span>
+                <span>${item.cost.toFixed(2)}</span>
               </div>
             )}
 
-            {item.notes && !item.isCompleted && (
+            {item.note && !item.isCompleted && (
               <p className="text-xs text-muted-foreground italic pt-1 border-t">
-                {item.notes}
+                {item.note}
               </p>
             )}
           </div>

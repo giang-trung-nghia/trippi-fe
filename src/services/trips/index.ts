@@ -7,7 +7,6 @@ import { httpClient } from "@/configs/axios"
 import type {
   Trip,
   TripsListResponse,
-  TripDetailResponse,
   CreateTripPayload,
   UpdateTripPayload,
   CreateTripDayPayload,
@@ -48,9 +47,28 @@ export const getRecentTrips = async (limit: number = 10): Promise<Trip[]> => {
   return response.data
 }
 
-export const getTripById = async (id: string): Promise<TripDetailResponse> => {
-  const response = await httpClient.get<TripDetailResponse>(`/trips/${id}`)
-  return response.data
+export const getTripById = async (id: string): Promise<Trip> => {
+  const response = await httpClient.get<Trip>(`/trips/${id}`)
+  
+  // Transform response to ensure backward compatibility
+  const trip = response.data
+  
+  // Add computed location field if lat/lng exist
+  if (trip.days) {
+    trip.days = trip.days.map(day => ({
+      ...day,
+      items: day.items.map(item => ({
+        ...item,
+        location: item.lat && item.lng ? { lat: item.lat, lng: item.lng } : undefined,
+        order: item.orderIndex,
+        placeId: item.googlePlaceId || undefined,
+        placeName: item.name,
+        description: item.note || undefined,
+      }))
+    }))
+  }
+  
+  return trip
 }
 
 export const createTrip = async (payload: CreateTripPayload): Promise<Trip> => {

@@ -49,7 +49,6 @@ export function TripFormDialog({ open, onOpenChange, trip }: TripFormDialogProps
     defaultValues: {
       name: "",
       description: "",
-      destination: "",
       budget: undefined,
       inviteEmail: "",
     },
@@ -60,7 +59,6 @@ export function TripFormDialog({ open, onOpenChange, trip }: TripFormDialogProps
     if (trip && open) {
       setValue("name", trip.name)
       setValue("description", trip.description || "")
-      setValue("destination", trip.destination || "")
       setValue("budget", trip.budget)
       
       setDateRange({
@@ -111,7 +109,6 @@ export function TripFormDialog({ open, onOpenChange, trip }: TripFormDialogProps
     const payload: CreateTripPayload = {
       name: values.name,
       description: values.description,
-      destination: values.destination,
       startDate,
       endDate,
       budget: values.budget,
@@ -175,18 +172,6 @@ export function TripFormDialog({ open, onOpenChange, trip }: TripFormDialogProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="destination">
-              Destination
-            </Label>
-            <Input
-              id="destination"
-              placeholder="Hanoi, Vietnam"
-              {...register("destination")}
-              disabled={mutation.isPending}
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="budget">
               Budget (optional)
             </Label>
@@ -211,9 +196,6 @@ export function TripFormDialog({ open, onOpenChange, trip }: TripFormDialogProps
             {errors.budget && (
               <p className="text-sm text-destructive">{errors.budget.message}</p>
             )}
-            <p className="text-xs text-muted-foreground">
-              Total estimated cost for this trip (USD)
-            </p>
           </div>
 
           <div className="space-y-2">

@@ -1,7 +1,6 @@
 "use client"
 
-import { format } from "date-fns"
-import { Calendar, MapPin, Clock, DollarSign } from "lucide-react"
+import { MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Trip } from "@/types/trip"
 import { DayCard } from "./day-card"

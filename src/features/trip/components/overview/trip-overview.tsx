@@ -70,7 +70,7 @@ export function TripOverview({
                 {trip.description}
               </p>
             )}
-            <div className="flex items-center justify-between gap-2 w-[50%] text-sm text-gray-600">
+            <div className="flex items-center justify-between gap-2 w-[600px] text-sm text-gray-600">
               {trip.startDate && trip.endDate && (
                 <div className="mt-1 flex items-center gap-2">
                   <Calendar className="h-4 w-4" />

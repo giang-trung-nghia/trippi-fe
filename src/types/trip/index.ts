@@ -27,87 +27,85 @@ export type TripMember = {
   updatedAt: string
 }
 
-// Trip Item (Place, Activity, etc.)
+// Trip Item (Place, Activity, etc.) - matching backend TripItemDetailDto
 export type TripItem = {
   id: string
-  tripDayId: string
   type: TripItemType
-  name: string
-  description?: string
-  notes?: string
+  customName?: string | null
+  name: string // Actual place name from snapshot
+  cost?: number | null
+  durationMinutes?: number | null
+  startTime?: string | null
+  endTime?: string | null
+  address?: string | null
+  googlePlaceId?: string | null
+  lat?: number | null
+  lng?: number | null
+  maxDurationMinutes?: number | null
+  minDurationMinutes?: number | null
+  phone?: string | null
+  standardOpeningHours?: string | null
+  standardClosingHours?: string | null
+  orderIndex: number
+  note?: string | null
   
-  // Location (for PLACE, MEAL, HOTEL, ACTIVITY)
-  placeId?: string // Google Place ID
-  placeName?: string
-  address?: string
+  // Computed fields for backward compatibility
   location?: {
     lat: number
     lng: number
   }
-  
-  // Time
-  startTime?: string // HH:mm format
-  endTime?: string // HH:mm format
-  duration?: number // minutes
-  
-  // Cost
-  estimatedCost?: number
-  actualCost?: number
-  currency?: string
-  
-  // Metadata
-  order: number
-  isCompleted: boolean
-  
-  createdAt: string
-  updatedAt: string
+  order?: number
+  placeId?: string
+  placeName?: string
+  description?: string
+  isCompleted?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
+// Trip Day - matching backend TripDayDetailDto
 export type TripDay = {
   id: string
-  tripId: string
   dayIndex: number
   date: string // YYYY-MM-DD
-  title?: string
-  description?: string
-  
+  note?: string | null
   items: TripItem[]
   
-  // Calculated fields
+  // Computed fields for backward compatibility
+  tripId?: string
+  title?: string
+  description?: string
   totalEstimatedCost?: number
   totalActualCost?: number
   totalDuration?: number // minutes
-  
-  createdAt: string
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
 }
 
+// Trip - matching backend TripDetailDto
 export type Trip = {
   id: string
   name: string
   description?: string
-  destination?: string
-  coverImage?: string
-  
+  coverImage?: string | null
   startDate: string // YYYY-MM-DD
   endDate: string // YYYY-MM-DD
   status: TripStatus
+  budget: number
   members: TripMember[]
   days: TripDay[]
-  budget?: number
-  totalEstimatedCost?: number
-  totalActualCost?: number
-  totalDays?: number
-  createdBy: string
+  totalEstimatedCost: number
+  totalActualCost: number
+  totalDays: number
+  createdBy?: string | null
   createdAt: string
   updatedAt: string
-  deletedAt?: string
+  deletedAt?: string | null
 }
 
 export type CreateTripPayload = {
   name: string
   description?: string
-  destination?: string
   startDate: string
   endDate: string
   budget?: number
@@ -129,24 +127,18 @@ export type CreateTripDayPayload = {
 export type UpdateTripDayPayload = Partial<Omit<CreateTripDayPayload, 'tripId'>>
 
 export type CreateTripItemPayload = {
-  tripDayId: string
   type: TripItemType
-  name: string
-  description?: string
-  notes?: string
-  placeId?: string
-  placeName?: string
-  address?: string
-  location?: {
-    lat: number
-    lng: number
-  }
+  tripDayId: string
+  orderIndex: number
+  snapshot: Record<string, unknown>
+  googlePlaceId?: string
+  lat?: number
+  lng?: number
   startTime?: string
   endTime?: string
-  duration?: number
-  estimatedCost?: number
-  currency?: string
-  order: number
+  cost?: number
+  note?: string
+  durationMinutes?: number
 }
 
 export type UpdateTripItemPayload = Partial<Omit<CreateTripItemPayload, 'tripDayId'>>
@@ -161,8 +153,9 @@ export type UpdateMemberRolePayload = {
   role: MemberRole
 }
 
+// API Response Types
 export type TripsListResponse = {
-  trips: Trip[]
+  data: Trip[]
   total: number
   page: number
   limit: number

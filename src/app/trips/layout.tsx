@@ -5,5 +5,5 @@ export default function TripsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <UserLayout customClassName="p-0">{children}</UserLayout>;
+  return <UserLayout>{children}</UserLayout>;
 }

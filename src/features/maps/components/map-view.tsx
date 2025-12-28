@@ -12,13 +12,14 @@ import { RoutePolyline } from "./route-polyline"
 import { PlaceAutocomplete } from "./place-autocomplete"
 import { FitBounds } from "./fit-bounds"
 import { Button } from "@/components/ui/button"
+import { toast } from "@/lib/toast"
 import type { Trip } from "@/types/trip"
 import type { MarkerData, RouteStats, PlaceResult } from "@/features/maps/types"
 import { TripItemType } from "@/features/trip/enums/trip-item-type"
 import { MarkerColors } from "@/features/maps/enums"
 import { DEFAULT_MAP_CONFIG } from "@/features/maps/constants"
 import { useUserPreferencesStore } from "@/store/use-user-preferences-store"
-import { useAddPlaceToDay } from "@/features/trip/hooks/use-trip-mutations"
+import { useAddTripItem } from "@/features/trip/hooks/use-trip-mutations"
 import {
   MapPin,
   Hotel,
@@ -46,7 +47,7 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
   const { mapShowLegend, mapType, setMapShowLegend, setMapType } = useUserPreferencesStore()
 
   // Get custom hooks for mutations
-  const addPlaceMutation = useAddPlaceToDay(trip.id)
+  const addTripItemMutation = useAddTripItem(trip.id)
 
   // Get selected day
   const selectedDay = useMemo(() => {
@@ -72,7 +73,7 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
             item,
             position: item.location,
             dayIndex: day.dayIndex,
-            itemOrder: item.order,
+            itemOrder: item.order ?? item.orderIndex,
           })
         }
       })
@@ -137,20 +138,23 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
   const handlePlaceAdd = useCallback(
     (place: PlaceResult) => {
       if (!selectedDay) {
-        alert("Please select a day to add this place to.")
+        toast.warning("Please select a day to add this place to.")
         return
       }
 
-      // Use the custom hook to add place
-      addPlaceMutation.mutate(
+      // Calculate order index based on existing items
+      const orderIndex = selectedDay.items.length
+
+      // Use the custom hook to add trip item
+      addTripItemMutation.mutate(
         {
           dayId: selectedDay.id,
           place,
+          type: TripItemType.PLACE,
+          orderIndex,
         },
         {
           onSuccess: () => {
-            // Show success message
-            alert(`Added "${place.name}" to Day ${selectedDay.dayIndex}!`)
             
             // Close info panels
             setSelectedPlace(null)
@@ -158,14 +162,14 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
             setSelectedMarker(null)
           },
           onError: (error) => {
-            alert(
-              `Failed to add place: ${error instanceof Error ? error.message : "Please try again."}`
+            toast.error(
+              error instanceof Error ? error.message : "Failed to add place. Please try again."
             )
           },
         }
       )
     },
-    [selectedDay, addPlaceMutation]
+    [selectedDay, addTripItemMutation]
   )
 
   const handlePlaceSelect = useCallback((place: PlaceResult) => {

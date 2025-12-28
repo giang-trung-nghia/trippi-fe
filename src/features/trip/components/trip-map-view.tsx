@@ -43,7 +43,7 @@ export function TripMapView({ trip }: TripMapViewProps) {
 
   return (
     <APIProvider apiKey={apiKey} language={languageCode}>
-      <div className="flex h-[calc(100vh-320px)] w-full overflow-hidden rounded-lg border">
+      <div className="flex h-[calc(100vh-280px)] w-full overflow-hidden rounded-lg border">
         <MapSidebar
           trip={trip}
           selectedDayId={selectedDayId}

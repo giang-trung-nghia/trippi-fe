@@ -92,14 +92,6 @@ export function RecentTripsList({ collapsed }: RecentTripsListProps) {
                       {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
                     </span>
                   </div>
-                  {trip.destination && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="size-3" />
-                      <span className="truncate max-w-[100px]">
-                        {trip.destination}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
             )}

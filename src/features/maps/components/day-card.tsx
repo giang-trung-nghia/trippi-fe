@@ -1,18 +1,19 @@
-"use client"
+"use client";
 
-import { format } from "date-fns"
-import { MapPin, Clock, DollarSign, ChevronRight } from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { TripDay } from "@/types/trip"
+import { format } from "date-fns";
+import { MapPin, Clock, DollarSign, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { TripDay } from "@/types/trip";
 
 type DayCardProps = {
-  day: TripDay
-  isSelected: boolean
-  onClick: () => void
-}
+  day: TripDay;
+  isSelected: boolean;
+  onClick: () => void;
+};
 
 export function DayCard({ day, isSelected, onClick }: DayCardProps) {
-  const itemsWithLocation = day.items.filter((item) => item.location)
+  console.log("day", day);
+  const itemsWithLocation = day.items;
 
   return (
     <button
@@ -80,10 +81,7 @@ export function DayCard({ day, isSelected, onClick }: DayCardProps) {
       {isSelected && itemsWithLocation.length > 0 && (
         <div className="mt-3 space-y-2 border-t pt-3">
           {itemsWithLocation.map((item, index) => (
-            <div
-              key={item.id}
-              className="flex items-start gap-2 text-sm"
-            >
+            <div key={item.id} className="flex items-start gap-2 text-sm">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700">
                 {index + 1}
               </span>
@@ -91,15 +89,19 @@ export function DayCard({ day, isSelected, onClick }: DayCardProps) {
                 <div className="font-medium text-gray-900 truncate">
                   {item.name}
                 </div>
-                {item.startTime && (
-                  <div className="text-xs text-gray-500">{item.startTime}</div>
-                )}
+                <div className="flex items-center gap-2">
+                  {item.startTime && (
+                    <p className="text-xs text-gray-500">{item.startTime}</p>
+                  )}
+                  {item.cost != 0 && (
+                    <p className="text-xs text-gray-500">${item.cost}</p>
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
     </button>
-  )
+  );
 }
-

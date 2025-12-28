@@ -5,53 +5,63 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createTripItem, updateTripItem, deleteTripItem } from "@/services/trips"
-import type { CreateTripItemPayload, UpdateTripItemPayload } from "@/types/trip"
+import type { UpdateTripItemPayload, Trip, CreateTripItemPayload } from "@/types/trip"
 import type { PlaceResult } from "@/features/maps/types"
 import { TripItemType } from "@/features/trip/enums/trip-item-type"
 
 /**
- * Hook to add a place to a specific trip day
+ * Hook to add a trip item (place, activity, etc.) to a specific trip day
  * Includes optimistic updates for better UX
  */
-export function useAddPlaceToDay(tripId: string) {
+export function useAddTripItem(tripId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async ({
       dayId,
       place,
+      type = TripItemType.PLACE,
+      orderIndex,
     }: {
       dayId: string
       place: PlaceResult
+      type?: TripItemType
+      orderIndex?: number
     }) => {
+      // Build the payload matching backend DTO
       const payload: CreateTripItemPayload = {
+        type,
         tripDayId: dayId,
-        type: TripItemType.PLACE,
-        name: place.name,
-        placeId: place.placeId,
-        placeName: place.name,
-        address: place.formattedAddress,
-        location: place.location,
-        order: 0, // Will be set by backend
-        isCompleted: false,
+        orderIndex: orderIndex ?? 0,
+        snapshot: {
+          name: place.name,
+          placeId: place.placeId,
+          placeName: place.name,
+          address: place.formattedAddress,
+          location: place.location,
+          types: place.types,
+        },
+        googlePlaceId: place.placeId,
+        lat: place.location.lat,
+        lng: place.location.lng,
       }
       
       return createTripItem(payload)
     },
-    onMutate: async ({ dayId, place }) => {
+    onMutate: async ({ dayId, place, orderIndex }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["trip", tripId] })
 
       // Snapshot the previous value
-      const previousTrip = queryClient.getQueryData(["trip", tripId])
+      const previousTrip = queryClient.getQueryData<Trip>(["trip", tripId])
 
       // Optimistically update to the new value
-      queryClient.setQueryData(["trip", tripId], (old: any) => {
+      queryClient.setQueryData<Trip>(["trip", tripId], (old) => {
         if (!old) return old
 
         return {
           ...old,
-          days: old.days.map((day: any) =>
+          days: old.days.map((day) =>
             day.id === dayId
               ? {
                   ...day,
@@ -59,14 +69,30 @@ export function useAddPlaceToDay(tripId: string) {
                     ...day.items,
                     {
                       id: `temp-${Date.now()}`,
-                      tripDayId: dayId,
                       type: TripItemType.PLACE,
                       name: place.name,
+                      customName: null,
+                      address: place.formattedAddress,
+                      googlePlaceId: place.placeId,
+                      lat: place.location.lat,
+                      lng: place.location.lng,
+                      orderIndex: orderIndex ?? day.items.length,
+                      cost: null,
+                      durationMinutes: null,
+                      startTime: null,
+                      endTime: null,
+                      note: null,
+                      phone: null,
+                      standardOpeningHours: null,
+                      standardClosingHours: null,
+                      maxDurationMinutes: null,
+                      minDurationMinutes: null,
+                      // Computed fields for backward compatibility
+                      location: place.location,
+                      order: orderIndex ?? day.items.length,
                       placeId: place.placeId,
                       placeName: place.name,
-                      address: place.formattedAddress,
-                      location: place.location,
-                      order: day.items.length,
+                      description: undefined,
                       isCompleted: false,
                       createdAt: new Date().toISOString(),
                       updatedAt: new Date().toISOString(),
@@ -108,17 +134,17 @@ export function useRemoveTripItem(tripId: string) {
     onMutate: async (itemId) => {
       await queryClient.cancelQueries({ queryKey: ["trip", tripId] })
 
-      const previousTrip = queryClient.getQueryData(["trip", tripId])
+      const previousTrip = queryClient.getQueryData<Trip>(["trip", tripId])
 
       // Optimistically remove item
-      queryClient.setQueryData(["trip", tripId], (old: any) => {
+      queryClient.setQueryData<Trip>(["trip", tripId], (old) => {
         if (!old) return old
 
         return {
           ...old,
-          days: old.days.map((day: any) => ({
+          days: old.days.map((day) => ({
             ...day,
-            items: day.items.filter((item: any) => item.id !== itemId),
+            items: day.items.filter((item) => item.id !== itemId),
           })),
         }
       })
@@ -156,17 +182,17 @@ export function useUpdateTripItem(tripId: string) {
     onMutate: async ({ itemId, updates }) => {
       await queryClient.cancelQueries({ queryKey: ["trip", tripId] })
 
-      const previousTrip = queryClient.getQueryData(["trip", tripId])
+      const previousTrip = queryClient.getQueryData<Trip>(["trip", tripId])
 
       // Optimistically update item
-      queryClient.setQueryData(["trip", tripId], (old: any) => {
+      queryClient.setQueryData<Trip>(["trip", tripId], (old) => {
         if (!old) return old
 
         return {
           ...old,
-          days: old.days.map((day: any) => ({
+          days: old.days.map((day) => ({
             ...day,
-            items: day.items.map((item: any) =>
+            items: day.items.map((item) =>
               item.id === itemId
                 ? { ...item, ...updates, updatedAt: new Date().toISOString() }
                 : item
