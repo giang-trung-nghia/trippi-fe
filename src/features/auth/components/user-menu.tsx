@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogOut, Settings, User } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import {
   DropdownMenu,
@@ -16,12 +17,17 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserStore } from "@/store/use-user-store";
 
+type UserMenuProps = {
+  collapsed?: boolean;
+};
+
 /**
  * User Menu Component
  * Shows user avatar with dropdown menu when authenticated
  * Displays: Profile, Settings, Logout options
+ * Supports collapsed sidebar mode
  */
-export function UserMenu() {
+export function UserMenu({ collapsed = false }: UserMenuProps) {
   const [isLoading, setIsLoading] = useState(false);
   const user = useUserStore((state) => state.user);
   const signOut = useUserStore((state) => state.signOut);
@@ -53,34 +59,89 @@ export function UserMenu() {
       .slice(0, 2);
   };
 
+  if (collapsed) {
+    // Collapsed view - just avatar with dropdown
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="relative h-10 w-10 rounded-full ring-2 ring-transparent transition-all hover:ring-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary mx-auto block"
+            aria-label="User menu"
+          >
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={user.avatarUrl} alt={user.name} />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {getInitials(user.name)}
+              </AvatarFallback>
+            </Avatar>
+          </button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent align="end" side="right" className="w-56">
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.name}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem asChild>
+            <Link href="/profile" className="cursor-pointer">
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem asChild>
+            <Link href="/settings" className="cursor-pointer">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            onClick={handleLogout}
+            disabled={isLoading}
+            className="cursor-pointer text-red-600 focus:text-red-600"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>{isLoading ? "Logging out..." : "Log out"}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  // Expanded view - full user info with avatar
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="relative h-10 w-10 rounded-full ring-2 ring-transparent transition-all hover:ring-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="User menu"
         >
-          <Avatar className="h-10 w-10">
+          <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src={user.avatarUrl} alt={user.name} />
             <AvatarFallback className="bg-primary text-primary-foreground">
               {getInitials(user.name)}
             </AvatarFallback>
           </Avatar>
-        </button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-sm font-medium leading-none truncate">{user.name}</p>
+            <p className="text-xs leading-none text-muted-foreground mt-1 truncate">
               {user.email}
             </p>
           </div>
-        </DropdownMenuLabel>
+        </button>
+      </DropdownMenuTrigger>
 
-        <DropdownMenuSeparator />
-
+      <DropdownMenuContent align="end" side="top" className="w-56">
         <DropdownMenuItem asChild>
           <Link href="/profile" className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />

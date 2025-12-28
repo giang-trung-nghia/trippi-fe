@@ -22,11 +22,17 @@ export function useAddTripItem(tripId: string) {
       place,
       type = TripItemType.PLACE,
       orderIndex,
+      startTime,
+      endTime,
+      cost,
     }: {
       dayId: string
       place: PlaceResult
       type?: TripItemType
       orderIndex?: number
+      startTime?: string
+      endTime?: string
+      cost?: number
     }) => {
       // Build the payload matching backend DTO
       const payload: CreateTripItemPayload = {
@@ -44,6 +50,9 @@ export function useAddTripItem(tripId: string) {
         googlePlaceId: place.placeId,
         lat: place.location.lat,
         lng: place.location.lng,
+        startTime,
+        endTime,
+        cost,
       }
       
       return createTripItem(payload)

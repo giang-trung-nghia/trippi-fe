@@ -8,6 +8,7 @@ export { MapTypeControl } from "./map-type-control"
 export { RoutePolyline } from "./route-polyline"
 export { PlaceSearch } from "./place-search"
 export { PlaceAutocomplete } from "./place-autocomplete"
+export { PlaceDetailsBottomPanel } from "./place-details-bottom-panel"
 export { PlaceInfoPanel } from "./place-info-panel"
 export { AddPlaceDialog } from "./add-place-dialog"
 

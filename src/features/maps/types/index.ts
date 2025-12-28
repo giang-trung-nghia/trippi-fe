@@ -35,7 +35,15 @@ export type PlaceResult = {
   name: string
   formattedAddress: string
   location: google.maps.LatLngLiteral
+  viewport?: {
+    northeast: google.maps.LatLngLiteral
+    southwest: google.maps.LatLngLiteral
+  }
   types?: string[]
+  rating?: number
+  userRatingsTotal?: number
+  phoneNumber?: string
+  website?: string
 }
 
 // Route polyline configuration
