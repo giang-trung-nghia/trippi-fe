@@ -1,28 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { format } from "date-fns";
-import {
-  Calendar,
-  MapPin,
-  DollarSign,
-  Users,
-  Edit,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, MapPin, DollarSign, Edit, Clock, Users } from "lucide-react";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import type { Trip } from "@/types/trip";
 import { MemberAvatarGroup } from "./member-avatar-group";
+import { TripTabs, type TripViewType } from "../trip-tabs";
 
 type TripOverviewProps = {
   trip: Trip;
   onEdit?: () => void;
   onAddMember?: () => void;
   onMemberClick?: (memberId: string) => void;
+  currentView?: TripViewType;
+  onViewChange?: (view: TripViewType) => void;
 };
 
 const statusConfig = {
@@ -53,11 +46,10 @@ export function TripOverview({
   onEdit,
   onAddMember,
   onMemberClick,
+  currentView,
+  onViewChange,
 }: TripOverviewProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
   const statusStyle = statusConfig[trip.status];
-  const startDate = format(new Date(trip.startDate), "MMM d, yyyy");
-  const endDate = format(new Date(trip.endDate), "MMM d, yyyy");
 
   return (
     <Card>
@@ -73,183 +65,92 @@ export function TripOverview({
               </Badge>
             </div>
 
-            {trip.description && !isExpanded && (
+            {trip.description && (
               <p className="text-sm text-muted-foreground line-clamp-1">
                 {trip.description}
               </p>
             )}
+            <div className="flex items-center justify-between gap-2 w-[50%] text-sm text-gray-600">
+              {trip.startDate && trip.endDate && (
+                <div className="mt-1 flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>
+                    {format(new Date(trip.startDate), "MMM d")} -{" "}
+                    {format(new Date(trip.endDate), "MMM d, yyyy")}
+                  </span>
+                  <span>
+                    ({trip.totalDays} {trip.totalDays === 1 ? "day" : "days"})
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                <span className="">
+                  {trip.days.reduce(
+                    (acc, day) =>
+                      acc + day.items.filter((item) => item.location).length,
+                    0
+                  )}{" "}
+                  places
+                </span>
+              </div>
+
+              {trip.days.reduce(
+                (acc, day) => acc + (day.totalDuration ?? 0),
+                0
+              ) > 0 && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>
+                    {Math.floor(
+                      trip.days.reduce(
+                        (acc, day) => acc + (day.totalDuration ?? 0),
+                        0
+                      ) / 60
+                    )}
+                    h
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <DollarSign className="h-3 w-3" />
+                <p className="font-medium">
+                  {trip.totalEstimatedCost} / {trip.budget}
+                </p>
+                {trip.totalActualCost != 0 && (
+                  <p className=" mt-0.5">Spent: {trip.totalActualCost}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                <p className="font-medium">({trip.members?.length})</p>
+                <MemberAvatarGroup
+                  members={trip.members ?? []}
+                  maxDisplay={3}
+                  onAddMember={onAddMember}
+                  onMemberClick={(member) => onMemberClick?.(member.id)}
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {onEdit && (
-              <Button variant="outline" size="icon" onClick={onEdit}>
-                <Edit className="size-4" />
-              </Button>
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Tab Navigation */}
+            {currentView && onViewChange && (
+              <TripTabs currentView={currentView} onViewChange={onViewChange} />
             )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsExpanded(!isExpanded)}
-              title={isExpanded ? "Collapse" : "Expand"}
-            >
-              {isExpanded ? (
-                <ChevronUp className="size-4" />
-              ) : (
-                <ChevronDown className="size-4" />
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              {onEdit && (
+                <Button variant="outline" size="icon" onClick={onEdit}>
+                  <Edit className="size-4" />
+                </Button>
               )}
-            </Button>
+            </div>
           </div>
         </div>
       </CardHeader>
-
-      <CardContent>
-        {/* Collapsed View - Minimal Info */}
-        {!isExpanded && (
-          <div className="flex flex-wrap items-center gap-4 text-sm">
-            {trip.destination && (
-              <div className="flex items-center gap-2">
-                <MapPin className="size-4 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  {trip.destination}
-                </span>
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <Calendar className="size-4 text-muted-foreground" />
-              <span className="text-muted-foreground">
-                {trip.totalDays} {trip.totalDays === 1 ? "day" : "days"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <DollarSign className="size-4 text-muted-foreground" />
-              <span className="text-muted-foreground">
-                ${trip.totalEstimatedCost?.toFixed(2)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="size-4 text-muted-foreground" />
-              <span className="text-muted-foreground">
-                {trip.members?.length}{" "}
-                {trip.members?.length === 1 ? "member" : "members"}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Expanded View - Detailed Info */}
-        {isExpanded && (
-          <>
-            {trip.description && (
-              <p className="text-sm text-muted-foreground mb-6">
-                {trip.description}
-              </p>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Destination */}
-              {trip.destination && (
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-md bg-primary/10 shrink-0">
-                    <MapPin className="size-4 text-primary" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs text-muted-foreground">Destination</p>
-                    <p className="text-sm font-medium break-all">
-                      {trip.destination}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Dates */}
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-md bg-primary/10 shrink-0">
-                  <Calendar className="size-4 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground">Duration</p>
-                  <p className="text-sm font-medium">
-                    {startDate} - {endDate}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {trip.totalDays} {trip.totalDays === 1 ? "day" : "days"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Budget */}
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-md bg-primary/10 shrink-0">
-                  <DollarSign className="size-4 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground">
-                    Estimated Budget
-                  </p>
-                  <p className="text-sm font-medium">
-                    ${trip.totalEstimatedCost} / ${trip.budget}
-                  </p>
-                  {trip.totalActualCost != 0 && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Spent: ${trip.totalActualCost}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Members */}
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-md bg-primary/10 shrink-0">
-                  <Users className="size-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {trip.members?.length}{" "}
-                    {trip.members?.length === 1 ? "Member" : "Members"}
-                  </p>
-                  <MemberAvatarGroup
-                    members={trip.members ?? []}
-                    maxDisplay={3}
-                    onAddMember={onAddMember}
-                    onMemberClick={(member) => onMemberClick?.(member.id)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Cost Breakdown */}
-            {trip.days?.length && trip.days.length > 0 && (
-              <>
-                <Separator className="my-6" />
-                <div>
-                  <h3 className="text-sm font-semibold mb-3">
-                    Daily Budget Breakdown
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {trip.days.map((day) => (
-                      <div
-                        key={day.id}
-                        className="p-3 rounded-lg border bg-card hover:shadow-md transition-shadow"
-                      >
-                        <p className="text-xs text-muted-foreground">
-                          Day {day.dayIndex}
-                        </p>
-                        <p className="text-lg font-semibold">
-                          ${day.totalEstimatedCost?.toFixed(0)}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {day.items.length}{" "}
-                          {day.items.length === 1 ? "item" : "items"}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-          </>
-        )}
-      </CardContent>
     </Card>
   );
 }

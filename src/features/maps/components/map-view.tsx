@@ -18,6 +18,7 @@ import { TripItemType } from "@/features/trip/enums/trip-item-type"
 import { MarkerColors } from "@/features/maps/enums"
 import { DEFAULT_MAP_CONFIG } from "@/features/maps/constants"
 import { useUserPreferencesStore } from "@/store/use-user-preferences-store"
+import { useAddPlaceToDay } from "@/features/trip/hooks/use-trip-mutations"
 import {
   MapPin,
   Hotel,
@@ -43,6 +44,9 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
 
   // Get map preferences from store
   const { mapShowLegend, mapType, setMapShowLegend, setMapType } = useUserPreferencesStore()
+
+  // Get custom hooks for mutations
+  const addPlaceMutation = useAddPlaceToDay(trip.id)
 
   // Get selected day
   const selectedDay = useMemo(() => {
@@ -130,19 +134,39 @@ export function MapView({ trip, selectedDayId }: MapViewProps) {
     }
   }
 
-  const handlePlaceAdd = useCallback((place: PlaceResult) => {
-    // In a real app, this would add the place to the trip
-    console.log("Place added:", place)
-    console.log("Selected day:", selectedDay)
-    
-    // Close info panels
-    setSelectedPlace(null)
-    setSelectedPlacePosition(null)
-    setSelectedMarker(null)
-    
-    // You could show a toast notification here
-    alert(`Added "${place.name}" to ${selectedDay ? `Day ${selectedDay.dayIndex}` : "your trip"}!`)
-  }, [selectedDay])
+  const handlePlaceAdd = useCallback(
+    (place: PlaceResult) => {
+      if (!selectedDay) {
+        alert("Please select a day to add this place to.")
+        return
+      }
+
+      // Use the custom hook to add place
+      addPlaceMutation.mutate(
+        {
+          dayId: selectedDay.id,
+          place,
+        },
+        {
+          onSuccess: () => {
+            // Show success message
+            alert(`Added "${place.name}" to Day ${selectedDay.dayIndex}!`)
+            
+            // Close info panels
+            setSelectedPlace(null)
+            setSelectedPlacePosition(null)
+            setSelectedMarker(null)
+          },
+          onError: (error) => {
+            alert(
+              `Failed to add place: ${error instanceof Error ? error.message : "Please try again."}`
+            )
+          },
+        }
+      )
+    },
+    [selectedDay, addPlaceMutation]
+  )
 
   const handlePlaceSelect = useCallback((place: PlaceResult) => {
     setSelectedPlace(place)

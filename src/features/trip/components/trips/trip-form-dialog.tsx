@@ -61,7 +61,7 @@ export function TripFormDialog({ open, onOpenChange, trip }: TripFormDialogProps
       setValue("name", trip.name)
       setValue("description", trip.description || "")
       setValue("destination", trip.destination || "")
-      setValue("budget", trip.totalEstimatedCost)
+      setValue("budget", trip.budget)
       
       setDateRange({
         from: new Date(trip.startDate),
@@ -180,7 +180,7 @@ export function TripFormDialog({ open, onOpenChange, trip }: TripFormDialogProps
             </Label>
             <Input
               id="destination"
-              placeholder="Tokyo, Japan"
+              placeholder="Hanoi, Vietnam"
               {...register("destination")}
               disabled={mutation.isPending}
             />

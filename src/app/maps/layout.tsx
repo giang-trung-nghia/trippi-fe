@@ -6,7 +6,7 @@ export default function MapsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <UserLayout className="p-0">
+    <UserLayout customClassName="p-0">
       <div className="h-full w-full overflow-hidden">{children}</div>
     </UserLayout>
   );

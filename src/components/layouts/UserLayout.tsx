@@ -19,10 +19,10 @@ import { useUserPreferencesStore } from "@/store/use-user-preferences-store";
 
 interface UserLayoutProps {
   children: ReactNode;
-  className?: string;
+  customClassName?: string;
 }
 
-export default function UserLayout({ children, className }: UserLayoutProps) {
+export default function UserLayout({ children, customClassName }: UserLayoutProps) {
   const { sidebarCollapsed, toggleSidebar } = useUserPreferencesStore();
 
   const sidebarItems = [
@@ -102,8 +102,8 @@ export default function UserLayout({ children, className }: UserLayoutProps) {
           className={cn(
             "flex-1 min-h-0 p-4 overflow-x-hidden",
             // Only add overflow-y-auto if not maps page (p-0 indicates maps page)
-            className === "p-0" ? "overflow-hidden" : "overflow-y-auto",
-            className
+            customClassName === "p-0" ? "overflow-hidden" : "overflow-y-auto",
+            customClassName
           )}
         >
           {children}

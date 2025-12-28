@@ -41,7 +41,7 @@ export function MemberAvatarGroup({
                   onMemberClick && "cursor-pointer"
                 )}
               >
-                <Avatar className="size-9">
+                <Avatar className="size-8">
                   <AvatarImage src={member.user.avatarUrl} alt={member.user.name} />
                   <AvatarFallback>
                     {member.user.name

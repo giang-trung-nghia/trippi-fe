@@ -131,7 +131,7 @@ export function PlaceInfoPanel({
           <Plus className="h-4 w-4" />
           <span>
             {selectedDay
-              ? `Add to Day ${selectedDay.dayIndex}`
+              ? `- Add to Day ${selectedDay.dayIndex}`
               : "Add to Trip"}
           </span>
         </Button>

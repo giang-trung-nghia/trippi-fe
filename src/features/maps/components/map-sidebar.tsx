@@ -21,45 +21,7 @@ export function MapSidebar({
     <div className="h-full w-96 shrink-0 bg-white border-r shadow-xl">
       <div className="flex h-full flex-col overflow-hidden">
         <div className="shrink-0 border-b p-6">
-          <h1 className="text-2xl font-bold text-gray-900">{trip.name}</h1>
-          {trip.destination && (
-            <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
-              <MapPin className="h-4 w-4" />
-              <span>{trip.destination}</span>
-            </div>
-          )}
-          {trip.startDate && trip.endDate && (
-            <div className="mt-1 flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="h-4 w-4" />
-              <span>
-                {format(new Date(trip.startDate), "MMM d")} -{" "}
-                {format(new Date(trip.endDate), "MMM d, yyyy")}
-              </span>
-            </div>
-          )}
-          <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
-            <div className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              <span>{trip.days.reduce(
-                  (acc, day) =>
-                    acc +
-                    day.items.filter((item) => item.location).length,
-                  0
-                )} places</span>
-            </div>
-            {trip.days.reduce((acc, day) => acc + (day.totalDuration ?? 0), 0) > 0 && (
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>{Math.floor(trip.days.reduce((acc, day) => acc + (day.totalDuration ?? 0), 0) / 60)}h</span>
-              </div>
-            )}
-            {trip.totalEstimatedCost && (
-              <div className="flex items-center gap-1">
-                <DollarSign className="h-3 w-3" />
-                <span>${trip.totalEstimatedCost}</span>
-              </div>
-            )}
-          </div>
+          
           <Button
             variant={selectedDayId === null ? "default" : "outline"}
             className="mt-4"
