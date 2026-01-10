@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Calendar, MapPin, DollarSign, Edit, Clock, Users } from "lucide-react";
+import { Calendar, MapPin, DollarSign, Edit, Clock, Users, Download } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { TripTabs, type TripViewType } from "../trip-tabs";
 type TripOverviewProps = {
   trip: Trip;
   onEdit?: () => void;
+  onDownloadCsv?: () => void;
+  onDownloadExcel?: () => void;
   onAddMember?: () => void;
   onMemberClick?: (memberId: string) => void;
   currentView?: TripViewType;
@@ -44,6 +46,8 @@ const statusConfig = {
 export function TripOverview({
   trip,
   onEdit,
+  onDownloadCsv,
+  onDownloadExcel,
   onAddMember,
   onMemberClick,
   currentView,
@@ -142,8 +146,32 @@ export function TripOverview({
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
+              {onDownloadCsv && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={onDownloadCsv}
+                  title="Download CSV"
+                  className="gap-1.5"
+                >
+                  <Download className="size-3.5" />
+                  <span className="text-xs">CSV</span>
+                </Button>
+              )}
+              {onDownloadExcel && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={onDownloadExcel}
+                  title="Download Excel"
+                  className="gap-1.5"
+                >
+                  <Download className="size-3.5" />
+                  <span className="text-xs">Excel</span>
+                </Button>
+              )}
               {onEdit && (
-                <Button variant="outline" size="icon" onClick={onEdit}>
+                <Button variant="outline" size="icon" onClick={onEdit} title="Edit Trip">
                   <Edit className="size-4" />
                 </Button>
               )}

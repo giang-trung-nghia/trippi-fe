@@ -97,6 +97,20 @@ export const restoreTrip = async (id: string): Promise<Trip> => {
   return response.data
 }
 
+export const exportTripCsv = async (id: string): Promise<Blob> => {
+  const response = await httpClient.get(`/trips/${id}/export/csv`, {
+    responseType: 'blob',
+  })
+  return response.data
+}
+
+export const exportTripExcel = async (id: string): Promise<Blob> => {
+  const response = await httpClient.get(`/trips/${id}/export/excel`, {
+    responseType: 'blob',
+  })
+  return response.data
+}
+
 // ============================================================================
 // Trip Days
 // ============================================================================

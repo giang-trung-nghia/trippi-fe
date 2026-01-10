@@ -3,13 +3,14 @@
 import { useState } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
-import { getTripById } from "@/services/trips"
+import { getTripById, exportTripCsv, exportTripExcel } from "@/services/trips"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TripOverview } from "@/features/trip/components/overview/trip-overview"
 import type { TripViewType } from "@/features/trip/components/trip-tabs"
 import { TripBoardView } from "@/features/trip/components/trip-board-view"
 import { TripMapView } from "@/features/trip/components/trip-map-view"
 import { TripFormDialog } from "@/features/trip/components/trips/trip-form-dialog"
+import { toast } from "@/lib/toast"
 
 export default function TripDetailPage() {
   const params = useParams()
@@ -36,6 +37,52 @@ export default function TripDetailPage() {
     setEditTripDialogOpen(true)
   }
 
+  const handleDownloadCsv = async () => {
+    try {
+      const blob = await exportTripCsv(tripId)
+      
+      // Create a download link and trigger download
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${trip?.name || 'trip'}.csv`
+      document.body.appendChild(link)
+      link.click()
+      
+      // Cleanup
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      toast.success("CSV downloaded successfully!")
+    } catch (error) {
+      console.error("Error downloading CSV:", error)
+      toast.error("Failed to download CSV. Please try again.")
+    }
+  }
+
+  const handleDownloadExcel = async () => {
+    try {
+      const blob = await exportTripExcel(tripId)
+      
+      // Create a download link and trigger download
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${trip?.name || 'trip'}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      
+      // Cleanup
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      toast.success("Excel downloaded successfully!")
+    } catch (error) {
+      console.error("Error downloading Excel:", error)
+      toast.error("Failed to download Excel. Please try again.")
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-6 max-w-full overflow-hidden">
@@ -60,6 +107,8 @@ export default function TripDetailPage() {
       <TripOverview 
         trip={trip} 
         onEdit={handleEditTrip}
+        onDownloadCsv={handleDownloadCsv}
+        onDownloadExcel={handleDownloadExcel}
         currentView={currentView}
         onViewChange={handleViewChange}
       />
