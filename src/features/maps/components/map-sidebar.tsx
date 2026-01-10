@@ -2,19 +2,25 @@
 
 import { MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import type { Trip } from "@/types/trip"
+import type { Trip, TripItem } from "@/types/trip"
 import { DayCard } from "./day-card"
 
 type MapSidebarProps = {
   trip: Trip
   selectedDayId: string | null
   onDaySelect: (dayId: string | null) => void
+  onItemClick?: (item: TripItem) => void
+  onItemDelete?: (itemId: string) => void
+  onItemUpdate?: (itemId: string, updates: { startTime?: string; endTime?: string; cost?: number }) => void
 }
 
 export function MapSidebar({
   trip,
   selectedDayId,
   onDaySelect,
+  onItemClick,
+  onItemDelete,
+  onItemUpdate,
 }: MapSidebarProps) {
   return (
     <div className="h-full w-96 shrink-0 bg-white border-r shadow-xl">
@@ -39,6 +45,9 @@ export function MapSidebar({
                 day={day}
                 isSelected={selectedDayId === day.id}
                 onClick={() => onDaySelect(day.id)}
+                onItemClick={onItemClick}
+                onItemDelete={onItemDelete}
+                onItemUpdate={onItemUpdate}
               />
             ))}
           </div>

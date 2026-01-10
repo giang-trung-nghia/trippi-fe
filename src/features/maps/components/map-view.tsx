@@ -31,10 +31,14 @@ import {
   Bus,
   Landmark,
 } from "lucide-react"
+import type { TripItem } from "@/types/trip"
 
 type MapViewProps = {
   trip: Trip
   selectedDayId: string | null
+  onItemClick?: (item: TripItem) => void
+  onItemDelete?: (itemId: string) => void
+  onItemUpdate?: (itemId: string, updates: { startTime?: string; endTime?: string; cost?: number }) => void
 }
 
 export function MapView({ trip, selectedDayId }: MapViewProps) {

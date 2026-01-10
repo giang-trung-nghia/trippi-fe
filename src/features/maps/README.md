@@ -130,7 +130,6 @@ import { PlaceSearch } from "@/features/maps/components"
 
 function MyComponent() {
   const handlePlaceSelect = (place) => {
-    console.log("Selected:", place)
     // Add place to your trip
   }
   

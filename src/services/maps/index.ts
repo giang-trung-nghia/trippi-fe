@@ -171,6 +171,29 @@ export type PlaceSearchResult = {
     types?: string[]
     rating?: number
     userRatingCount?: number
+    photos?: Array<{
+      name: string
+      widthPx: number
+      heightPx: number
+      authorAttributions: Array<{
+        displayName: string
+        uri: string
+        photoUri: string
+      }>
+      flagContentUri: string
+      googleMapsUri: string
+    }>
+    nationalPhoneNumber?: string
+    internationalPhoneNumber?: string
+    websiteUri?: string
+    currentOpeningHours?: Array<{
+      day: number
+      time: string
+    }>
+    viewport?: {
+      high: google.maps.LatLngLiteral
+      low: google.maps.LatLngLiteral
+    }
   }>
 }
 
@@ -216,7 +239,7 @@ export const searchPlaces = async (
     {
       headers: {
         "X-Goog-FieldMask":
-          "places.id,places.formattedAddress,places.displayName,places.location,places.types,places.rating,places.userRatingCount",
+          "places.id,places.formattedAddress,places.displayName,places.location,places.types,places.rating,places.userRatingCount,places.photos,places.nationalPhoneNumber,places.internationalPhoneNumber,places.websiteUri,places.currentOpeningHours,places.viewport",
       },
     }
   )

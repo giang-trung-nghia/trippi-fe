@@ -45,6 +45,7 @@ export function PlaceAutocomplete({
       const data = await searchPlaces(searchQuery, {
         maxResultCount: 5,
       })
+      console.log("data", data)
 
       if (data.places && data.places.length > 0) {
         const formattedResults: PlaceResult[] = data.places.map((place) => ({
@@ -55,15 +56,21 @@ export function PlaceAutocomplete({
             lat: place.location.latitude,
             lng: place.location.longitude,
           },
+          photos: place.photos?.map((photo) => ({
+            name: photo.name,
+            photoUri: photo.flagContentUri,
+            widthPx: photo.widthPx,
+            heightPx: photo.heightPx,
+          })),
           viewport: place.viewport
             ? {
                 northeast: {
-                  lat: place.viewport.high.latitude,
-                  lng: place.viewport.high.longitude,
+                  lat: place.viewport.high.lat,
+                  lng: place.viewport.high.lng,
                 },
                 southwest: {
-                  lat: place.viewport.low.latitude,
-                  lng: place.viewport.low.longitude,
+                  lat: place.viewport.low.lat,
+                  lng: place.viewport.low.lng,
                 },
               }
             : undefined,
@@ -133,6 +140,7 @@ export function PlaceAutocomplete({
   const handleResultClick = (place: PlaceResult) => {
     if (onPlaceInfo) {
       onPlaceInfo(place)
+      console.log("placeinfo", place)
     } else {
       onPlaceSelect(place)
     }

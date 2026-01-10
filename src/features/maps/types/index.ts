@@ -44,6 +44,16 @@ export type PlaceResult = {
   userRatingsTotal?: number
   phoneNumber?: string
   website?: string
+  photos?: Array<{
+    name: string
+    photoUri?: string
+    widthPx?: number
+    heightPx?: number
+  }>
+  currentOpeningHours?: Array<{
+    day: number
+    time: string
+  }>
 }
 
 // Route polyline configuration

@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { X, MapPin, Phone, Clock, Star, DollarSign, Minimize2, Plus } from "lucide-react"
+import { X, MapPin, Phone, Star, DollarSign, Minimize2, Plus, Image as ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { ImageLightbox } from "@/components/ui/image-lightbox"
 import type { PlaceResult } from "@/features/maps/types"
 import type { TripDay } from "@/types/trip"
 
@@ -29,20 +29,41 @@ export function PlaceDetailsBottomPanel({
   onClose,
   onAddToTrip,
 }: PlaceDetailsBottomPanelProps) {
+  console.log("place", place)
   const [isMinimized, setIsMinimized] = useState(false)
-  const [startTime, setStartTime] = useState("")
   const [endTime, setEndTime] = useState("")
   const [cost, setCost] = useState("")
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
-  // Auto-prefill start time based on last item's end time
-  useEffect(() => {
+  // Format time to HH:MM (remove seconds if present)
+  const formatTime = (time: string) => {
+    if (!time) return ""
+    // If time has seconds (HH:MM:SS), remove them
+    const parts = time.split(":")
+    if (parts.length >= 2) {
+      return `${parts[0]}:${parts[1]}`
+    }
+    return time
+  }
+
+  // Auto-prefill start time based on last item's end time (derived state)
+  const defaultStartTime = useMemo(() => {
     if (selectedDay && selectedDay.items.length > 0) {
       const lastItem = selectedDay.items[selectedDay.items.length - 1]
       if (lastItem.endTime) {
-        setStartTime(lastItem.endTime)
+        return formatTime(lastItem.endTime)
       }
     }
+    return ""
   }, [selectedDay])
+
+  const [startTime, setStartTime] = useState(defaultStartTime)
+
+  // Update startTime when defaultStartTime changes
+  useEffect(() => {
+    setStartTime(defaultStartTime)
+  }, [defaultStartTime])
 
   const handleAddToTrip = () => {
     onAddToTrip({
@@ -53,12 +74,17 @@ export function PlaceDetailsBottomPanel({
     })
   }
 
-  // Extract rating if available
-  const rating = (place as any).rating
-  const userRatingsTotal = (place as any).userRatingsTotal
-  const phoneNumber = (place as any).phoneNumber
-  const website = (place as any).website
-  const estimatedDuration = (place as any).estimatedDuration || "30 min"
+  // Extract rating and photos if available
+  const rating = place.rating
+  const userRatingsTotal = place.userRatingsTotal
+  const phoneNumber = place.phoneNumber
+  const website = place.website
+  const photos = place.photos || []
+
+  const handleOpenLightbox = (index: number) => {
+    setLightboxIndex(index)
+    setLightboxOpen(true)
+  }
 
   // Minimized view
   if (isMinimized) {
@@ -150,10 +176,10 @@ export function PlaceDetailsBottomPanel({
               </TabsTrigger>
               <TabsTrigger 
                 value="photos" 
-                disabled 
-                className="rounded-none text-gray-400 px-3 text-xs"
+                disabled={photos.length === 0}
+                className={photos.length === 0 ? "rounded-none text-gray-400 px-3 text-xs" : "rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent px-3 text-xs"}
               >
-                Photos
+                Photos {photos.length > 0 && `(${photos.length})`}
               </TabsTrigger>
             </TabsList>
 
@@ -188,7 +214,7 @@ export function PlaceDetailsBottomPanel({
               )}
 
               {/* Duration */}
-              <div className="flex items-start gap-2">
+              {/* <div className="flex items-start gap-2">
                 <Clock className="h-3.5 w-3.5 text-gray-400 mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-500">Typical visit</p>
@@ -196,7 +222,7 @@ export function PlaceDetailsBottomPanel({
                     People spend {estimatedDuration} here
                   </p>
                 </div>
-              </div>
+              </div> */}
 
               {/* Website */}
               {website && (
@@ -213,6 +239,38 @@ export function PlaceDetailsBottomPanel({
                       {website}
                     </a>
                   </div>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="photos" className="px-3 py-2 overflow-y-auto flex-1 m-0">
+              {photos.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {photos.map((photo, index) => {
+                    const photoUrl = photo.photoUri || `https://places.googleapis.com/v1/${photo.name}/media?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&maxHeightPx=400&maxWidthPx=400`
+                    
+                    return (
+                      <button
+                        key={photo.name}
+                        onClick={() => handleOpenLightbox(index)}
+                        className="relative aspect-square overflow-hidden rounded-lg group cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                      >
+                        <img
+                          src={photoUrl}
+                          alt={`${place.name} - Photo ${index + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                          <ImageIcon className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                  <ImageIcon className="h-12 w-12 text-gray-300 mb-2" />
+                  <p className="text-sm text-gray-500">No photos available</p>
                 </div>
               )}
             </TabsContent>
@@ -254,30 +312,32 @@ export function PlaceDetailsBottomPanel({
               {/* Start Time */}
               <div className="space-y-1">
                 <Label htmlFor="startTime" className="text-xs font-medium">
-                  Start Time
+                  Start Time (24h)
                 </Label>
-                <Input
+                <input
                   id="startTime"
                   type="time"
                   value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full h-8 text-xs [&::-webkit-calendar-picker-indicator]:hidden"
+                  onChange={(e) => setStartTime(formatTime(e.target.value))}
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   step="300"
+                  required
                 />
               </div>
 
               {/* End Time */}
               <div className="space-y-1">
                 <Label htmlFor="endTime" className="text-xs font-medium">
-                  End Time
+                  End Time (24h)
                 </Label>
-                <Input
+                <input
                   id="endTime"
                   type="time"
                   value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full h-8 text-xs [&::-webkit-calendar-picker-indicator]:hidden"
+                  onChange={(e) => setEndTime(formatTime(e.target.value))}
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   step="300"
+                  required
                 />
               </div>
             </div>
@@ -316,6 +376,18 @@ export function PlaceDetailsBottomPanel({
           </div>
         </div>
       </div>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        images={photos.map(
+          (photo) =>
+            photo.photoUri ||
+            `https://places.googleapis.com/v1/${photo.name}/media?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&maxHeightPx=1200&maxWidthPx=1200`
+        )}
+        initialIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
     </div>
   )
 }
