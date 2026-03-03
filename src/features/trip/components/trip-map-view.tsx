@@ -37,8 +37,6 @@ function TripMapViewInner({ trip, selectedDayId, onDaySelect }: {
     if (currentZoom && currentZoom < 15) {
       map.setZoom(15)
     }
-    
-    toast.success(`Centered on ${item.name}`)
   }, [map])
 
   const handleItemDelete = useCallback((itemId: string) => {

@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createTripItem, updateTripItem, deleteTripItem } from "@/services/trips"
+import { createTripItem, updateTripItem, deleteTripItem, deleteTrip } from "@/services/trips"
 import type { UpdateTripItemPayload, Trip, CreateTripItemPayload } from "@/types/trip"
 import type { PlaceResult } from "@/features/maps/types"
 import { TripItemType } from "@/features/trip/enums/trip-item-type"
@@ -220,6 +220,27 @@ export function useUpdateTripItem(tripId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trip", tripId] })
+    },
+  })
+}
+
+/**
+ * Hook to delete a trip
+ */
+export function useDeleteTrip() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (tripId: string) => {
+      return deleteTrip(tripId)
+    },
+    onSuccess: () => {
+      // Invalidate both recentTrips and trips queries
+      queryClient.invalidateQueries({ queryKey: ["recentTrips"] })
+      queryClient.invalidateQueries({ queryKey: ["trips"] })
+    },
+    onError: (err) => {
+      console.error("Failed to delete trip:", err)
     },
   })
 }
