@@ -72,7 +72,7 @@ function TripMapViewInner({ trip, selectedDayId, onDaySelect }: {
   }, [updateTripItemMutation])
 
   return (
-    <div className="flex h-[calc(100vh-180px)] w-full overflow-hidden rounded-lg border">
+    <div className="flex h-[calc(100vh-240px)] w-full overflow-hidden rounded-lg border">
       <MapSidebar
         trip={trip}
         selectedDayId={selectedDayId}
