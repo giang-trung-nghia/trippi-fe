@@ -38,7 +38,7 @@ export function TripChecklistCard({
   checklist,
   tripId,
 }: TripChecklistCardProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(true) // Default expanded
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const deleteMutation = useDeleteChecklistTrip(tripId)
 
@@ -64,29 +64,29 @@ export function TripChecklistCard({
       <Collapsible.Root
         open={isOpen}
         onOpenChange={setIsOpen}
-        className="border rounded-lg bg-white shadow-sm"
+        className="border rounded-lg bg-card shadow-sm"
       >
-        <div className="p-3">
-          <div className="flex items-start gap-2">
+        <div className="p-2">
+          <div className="flex items-start gap-1.5">
             <Collapsible.Trigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 shrink-0 mt-0.5"
+                className="h-5 w-5 shrink-0 mt-0.5"
               >
                 {isOpen ? (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="h-3.5 w-3.5" />
                 ) : (
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3.5 w-3.5" />
                 )}
               </Button>
             </Collapsible.Trigger>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-lg">{typeIcon}</span>
-                  <h3 className="font-semibold text-sm truncate">
+              <div className="flex items-start justify-between gap-1.5 mb-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-base">{typeIcon}</span>
+                  <h3 className="font-semibold text-xs truncate">
                     {checklist.name}
                   </h3>
                 </div>
@@ -96,10 +96,10 @@ export function TripChecklistCard({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 shrink-0"
+                      className="h-6 w-6 shrink-0"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical className="h-3.5 w-3.5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -114,17 +114,23 @@ export function TripChecklistCard({
                 </DropdownMenu>
               </div>
 
-              <ChecklistProgress
-                totalItems={totalItems}
-                checkedItems={checkedItems}
-              />
+              {isOpen ? (
+                <ChecklistProgress
+                  totalItems={totalItems}
+                  checkedItems={checkedItems}
+                />
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  {checkedItems}/{totalItems}
+                </span>
+              )}
             </div>
           </div>
         </div>
 
         <Collapsible.Content className={cn("overflow-hidden", isOpen && "border-t")}>
-          <div className="p-3 space-y-2">
-            {checklist.items && checklist.items.length > 0 ? (
+          <div className="p-2 space-y-0">
+            {checklist.items && checklist.items.length > 0 && (
               checklist.items.map((item) => (
                 <ChecklistItemRow
                   key={item.id}
@@ -132,10 +138,6 @@ export function TripChecklistCard({
                   checklistId={checklist.id}
                 />
               ))
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No items yet
-              </p>
             )}
             <AddChecklistItemForm checklistId={checklist.id} />
           </div>

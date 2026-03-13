@@ -109,6 +109,7 @@ export type ReorderUserItemsPayload = {
 
 export type ChecklistTrip = BaseEntity & {
   name: string
+  tripId?: string  // Direct tripId field from backend
   trip?: { id: string; [key: string]: any }
   checklistUser?: ChecklistUser
   items?: ChecklistTripItem[]

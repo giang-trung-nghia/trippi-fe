@@ -1,21 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
-import { Trash2 } from "lucide-react"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { useDeleteChecklistTripItem } from "@/features/checklist/hooks/use-checklist-mutations"
-import { useDebouncedToggle } from "@/features/checklist/hooks/use-debounced-toggle"
+import { Input } from "@/components/ui/input"
+import { Trash2, Pencil } from "lucide-react"
+import { useDeleteChecklistTripItem, useToggleChecklistTripItem, useUpdateChecklistTripItem } from "@/features/checklist/hooks/use-checklist-mutations"
+import { useUserStore } from "@/store/use-user-store"
 import { toast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import type { ChecklistTripItem } from "@/types/checklist"
@@ -30,86 +21,139 @@ export function ChecklistItemRow({
   checklistId,
 }: ChecklistItemRowProps) {
   const [isHovered, setIsHovered] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [optimisticChecked, setOptimisticChecked] = useState(item.isChecked)
-  
-  const deleteMutation = useDeleteChecklistTripItem(checklistId)
-  const { toggleItem } = useDebouncedToggle(checklistId)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editName, setEditName] = useState(item.name)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleToggle = (checked: boolean) => {
-    // Optimistic UI update
+  const userId = useUserStore((state) => state.user?.id)
+  const deleteMutation = useDeleteChecklistTripItem(checklistId)
+  const toggleMutation = useToggleChecklistTripItem(checklistId)
+  const updateMutation = useUpdateChecklistTripItem(checklistId)
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [isEditing])
+
+  const handleToggle = async (checked: boolean) => {
+    if (!userId) return
     setOptimisticChecked(checked)
-    
-    // Trigger debounced save
-    toggleItem(item.id, item.isChecked)
+    try {
+      await toggleMutation.mutateAsync({ itemId: item.id, userId })
+    } catch {
+      setOptimisticChecked(!checked)
+      toast.error("Failed to update")
+    }
   }
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
+    deleteMutation.mutate(item.id, {
+      onSuccess: () => toast.success("Item deleted"),
+      onError: () => toast.error("Failed to delete item"),
+    })
+  }
+
+  const handleStartEdit = () => {
+    setEditName(item.name)
+    setIsEditing(true)
+  }
+
+  const handleSaveEdit = async () => {
+    const trimmed = editName.trim()
+    if (trimmed === item.name || !trimmed) {
+      setIsEditing(false)
+      setEditName(item.name)
+      return
+    }
     try {
-      await deleteMutation.mutateAsync(item.id)
-      toast.success("Item deleted successfully")
-      setDeleteDialogOpen(false)
+      await updateMutation.mutateAsync({
+        itemId: item.id,
+        payload: { name: trimmed },
+      })
+      toast.success("Item updated")
+      setIsEditing(false)
     } catch {
-      toast.error("Failed to delete item")
+      toast.error("Failed to update item")
     }
   }
 
   return (
-    <>
-      <div
-        className="group flex items-center gap-2 py-2 px-2 rounded-md hover:bg-gray-50 transition-colors min-h-[44px]"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <Checkbox
-          id={`item-${item.id}`}
-          checked={optimisticChecked}
-          onCheckedChange={handleToggle}
-          className="shrink-0 h-5 w-5"
+    <div
+      className="group flex items-center gap-1.5 py-1 px-2 rounded-md hover:bg-secondary/50 transition-colors min-h-[32px]"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Checkbox
+        id={`item-${item.id}`}
+        checked={optimisticChecked}
+        onCheckedChange={(checked) => handleToggle(checked === true)}
+        disabled={toggleMutation.isPending}
+        className="shrink-0 h-4 w-4"
+      />
+
+      {isEditing ? (
+        <Input
+          ref={inputRef}
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          onBlur={handleSaveEdit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSaveEdit()
+            if (e.key === "Escape") {
+              setEditName(item.name)
+              setIsEditing(false)
+              inputRef.current?.blur()
+            }
+          }}
+          className="h-7 text-xs flex-1 min-w-0"
         />
-        
+      ) : (
         <label
           htmlFor={`item-${item.id}`}
           className={cn(
-            "flex-1 text-sm cursor-pointer select-none",
+            "flex-1 min-w-0 text-xs cursor-pointer select-none truncate",
             optimisticChecked && "line-through text-muted-foreground"
           )}
         >
           {item.name}
         </label>
+      )}
 
-        {isHovered && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <Trash2 className="h-4 w-4 text-red-500" />
-          </Button>
-        )}
+      {/* Reserve space for edit + delete so row height doesn't change on hover */}
+      <div className="w-14 shrink-0 flex items-center justify-end gap-0.5">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity",
+            isHovered && "opacity-100"
+          )}
+          onClick={(e) => {
+            e.preventDefault()
+            handleStartEdit()
+          }}
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-destructive",
+            isHovered && "opacity-100"
+          )}
+          onClick={(e) => {
+            e.preventDefault()
+            handleDelete()
+          }}
+          disabled={deleteMutation.isPending}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
       </div>
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete item?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{item.name}"?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    </div>
   )
 }

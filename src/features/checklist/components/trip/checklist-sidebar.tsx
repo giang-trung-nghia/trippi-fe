@@ -10,12 +10,10 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Plus } from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
-import { getChecklistTrips } from "@/services/checklists"
+import { useChecklistTripsByTripId } from "@/features/checklist/hooks/use-checklist-mutations"
 import { TripChecklistCard } from "./trip-checklist-card"
 import { AddChecklistSourceDialog } from "./add-checklist-source-dialog"
 import { ChecklistEmptyState } from "./checklist-empty-state"
-import { SaveIndicator } from "./save-indicator"
 
 type ChecklistSidebarProps = {
   tripId: string
@@ -30,50 +28,46 @@ export function ChecklistSidebar({
 }: ChecklistSidebarProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false)
 
-  const { data: allChecklists, isLoading } = useQuery({
-    queryKey: ["checklistTrips"],
-    queryFn: getChecklistTrips,
-    enabled: isOpen,
-  })
-
-  // Filter checklists for this trip
-  const tripChecklists = allChecklists?.filter((c) => c.trip?.id === tripId) || []
+  // Fetch checklists for this trip with full item details
+  const { data: tripChecklists, isLoading } = useChecklistTripsByTripId(tripId, true)
 
   return (
     <>
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent
           side="right"
-          className="w-full md:w-[400px] p-0 flex flex-col"
+          showClose={false}
+          className="w-full md:w-[400px] p-0 flex flex-col gap-0 min-h-0 h-full z-[100]"
         >
-          <SheetHeader className="px-4 md:px-6 py-4 border-b shrink-0">
+          <SheetHeader className="px-4 md:px-6 py-3 border-b shrink-0">
             <div className="flex items-center justify-between">
-              <SheetTitle>Checklists</SheetTitle>
-              <SaveIndicator />
+              <SheetTitle className="text-base">Checklists</SheetTitle>
             </div>
           </SheetHeader>
 
-          <ScrollArea className="flex-1 px-4 md:px-6">
-            <div className="py-4 space-y-3">
-              {isLoading ? (
-                <div className="text-sm text-muted-foreground text-center py-8">
-                  Loading checklists...
-                </div>
-              ) : tripChecklists.length === 0 ? (
-                <ChecklistEmptyState onAddClick={() => setAddDialogOpen(true)} />
-              ) : (
-                tripChecklists.map((checklist) => (
-                  <TripChecklistCard
-                    key={checklist.id}
-                    checklist={checklist}
-                    tripId={tripId}
-                  />
-                ))
-              )}
-            </div>
-          </ScrollArea>
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="px-4 md:px-6 py-3 space-y-2">
+                {isLoading ? (
+                  <div className="text-sm text-muted-foreground text-center py-6">
+                    Loading checklists...
+                  </div>
+                ) : !tripChecklists || tripChecklists.length === 0 ? (
+                  <ChecklistEmptyState onAddClick={() => setAddDialogOpen(true)} />
+                ) : (
+                  tripChecklists.map((checklist) => (
+                    <TripChecklistCard
+                      key={checklist.id}
+                      checklist={checklist}
+                      tripId={tripId}
+                    />
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </div>
 
-          <div className="px-4 md:px-6 py-4 border-t shrink-0">
+          <div className="px-4 md:px-6 py-3 border-t shrink-0">
             <Button
               onClick={() => setAddDialogOpen(true)}
               className="w-full"

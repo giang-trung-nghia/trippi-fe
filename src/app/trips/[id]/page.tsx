@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import { getTripById, exportTripCsv, exportTripExcel } from "@/services/trips"
-import { getChecklistTrips } from "@/services/checklists"
+import { useChecklistTripsByTripId } from "@/features/checklist/hooks/use-checklist-mutations"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TripOverview } from "@/features/trip/components/overview/trip-overview"
 import type { TripViewType } from "@/features/trip/components/trip-tabs"
@@ -14,7 +14,6 @@ import { TripFormDialog } from "@/features/trip/components/trips/trip-form-dialo
 import { ChecklistSidebar } from "@/features/checklist/components/trip/checklist-sidebar"
 import { ChecklistSidebarToggle } from "@/features/checklist/components/trip/checklist-sidebar-toggle"
 import { toast } from "@/lib/toast"
-import { cn } from "@/lib/utils"
 
 export default function TripDetailPage() {
   const params = useParams()
@@ -34,13 +33,9 @@ export default function TripDetailPage() {
     queryFn: () => getTripById(tripId),
   })
 
-  // Fetch checklist data for the badge count
-  const { data: allChecklists } = useQuery({
-    queryKey: ["checklistTrips"],
-    queryFn: getChecklistTrips,
-  })
-
-  const tripChecklists = allChecklists?.filter((c) => c.trip?.id === tripId) || []
+  
+  // Fetch checklist data for the badge count (filtered by tripId)
+  const { data: tripChecklists } = useChecklistTripsByTripId(tripId)
 
   const handleViewChange = (view: TripViewType) => {
     router.push(`/trips/${tripId}?view=${view}`, { scroll: false })
@@ -126,15 +121,10 @@ export default function TripDetailPage() {
         onViewChange={handleViewChange}
       />
 
-      {/* View Content with Checklist Sidebar */}
+      {/* View Content - Checklist sidebar overlays on top, does not resize this */}
       <div className="relative min-h-0">
-        {/* Main View Content */}
-        <div
-          className={cn(
-            "transition-all duration-300",
-            checklistSidebarOpen && "md:mr-[400px]"
-          )}
-        >
+        {/* Main View Content - full width always */}
+        <div>
           {currentView === "board" && <TripBoardView trip={trip} />}
           {currentView === "map" && <TripMapView trip={trip} />}
         </div>
@@ -143,7 +133,7 @@ export default function TripDetailPage() {
         <ChecklistSidebarToggle
           isOpen={checklistSidebarOpen}
           onToggle={() => setChecklistSidebarOpen(!checklistSidebarOpen)}
-          checklistCount={tripChecklists.length}
+          checklistCount={tripChecklists?.length || 0}
         />
 
         {/* Checklist Sidebar */}

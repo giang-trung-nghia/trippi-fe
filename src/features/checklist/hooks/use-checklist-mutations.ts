@@ -14,6 +14,7 @@ import {
   createChecklistUser,
   deleteChecklistUser,
   getChecklistTrips,
+  getChecklistTripsByTripId,
   getChecklistTripById,
   createChecklistTrip,
   copyChecklistFromUserChecklist,
@@ -150,12 +151,26 @@ export function useDeleteChecklistUser() {
 // ============================================================================
 
 /**
- * Hook to fetch trip checklists
+ * Hook to fetch all trip checklists (unfiltered)
  */
 export function useChecklistTrips() {
   return useQuery({
     queryKey: ["checklistTrips"],
     queryFn: getChecklistTrips,
+  })
+}
+
+/**
+ * Hook to fetch checklist trips filtered by trip ID
+ * Use this for the checklist sidebar when viewing a specific trip
+ * @param tripId - The trip ID to filter by
+ * @param includeItems - When true, fetches full item details for each checklist
+ */
+export function useChecklistTripsByTripId(tripId: string, includeItems = false) {
+  return useQuery({
+    queryKey: ["checklistTrips", "byTrip", tripId, includeItems],
+    queryFn: () => getChecklistTripsByTripId(tripId, includeItems),
+    enabled: !!tripId,
   })
 }
 
@@ -271,6 +286,7 @@ export function useAddChecklistTripItem(checklistId: string) {
 
 /**
  * Hook to toggle a checklist item (check/uncheck)
+ * Call when user clicks checkbox - no debounce
  */
 export function useToggleChecklistTripItem(checklistId: string) {
   const queryClient = useQueryClient()
@@ -280,6 +296,7 @@ export function useToggleChecklistTripItem(checklistId: string) {
       toggleChecklistTripItem(itemId, { userId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["checklistTrip", checklistId] })
+      queryClient.invalidateQueries({ queryKey: ["checklistTrips"] })
     },
   })
 }
@@ -315,6 +332,7 @@ export function useUpdateChecklistTripItem(checklistId: string) {
     }) => updateChecklistTripItem(itemId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["checklistTrip", checklistId] })
+      queryClient.invalidateQueries({ queryKey: ["checklistTrips"] })
     },
   })
 }
@@ -329,6 +347,7 @@ export function useDeleteChecklistTripItem(checklistId: string) {
     mutationFn: (itemId: string) => deleteChecklistTripItem(itemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["checklistTrip", checklistId] })
+      queryClient.invalidateQueries({ queryKey: ["checklistTrips"] })
     },
   })
 }

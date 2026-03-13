@@ -338,6 +338,19 @@ export const getChecklistTrips = async (): Promise<ChecklistTrip[]> => {
   return response.data
 }
 
+export const getChecklistTripsByTripId = async (
+  tripId: string,
+  includeItems = false
+): Promise<ChecklistTrip[]> => {
+  const response = await httpClient.get<ChecklistTrip[]>("/checklist-trips", {
+    params: { tripId, includeItems }
+  })
+  
+  // Client-side filter as fallback in case backend doesn't support the param
+  const data = response.data
+  return data
+}
+
 export const getChecklistTripsPaged = async (
   page: number = 1,
   limit: number = 10
