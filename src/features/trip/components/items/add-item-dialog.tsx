@@ -87,14 +87,15 @@ export function AddItemDialog({
       const payload: CreateTripItemPayload = {
         tripDayId,
         type: values.type,
-        name: values.name,
-        description: values.description,
-        notes: values.notes,
-        address: values.address,
+        snapshot: {
+          name: values.name,
+        },
+        orderIndex: 0,
         startTime: values.startTime,
         endTime: values.endTime,
-        estimatedCost: values.estimatedCost,
-        order: 0, // Will be set by backend
+        cost: values.estimatedCost ?? undefined,
+        note: values.notes ?? undefined,
+        durationMinutes: undefined,
       }
       return createTripItem(payload)
     },

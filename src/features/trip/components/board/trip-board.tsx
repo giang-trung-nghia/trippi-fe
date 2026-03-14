@@ -128,7 +128,7 @@ export function TripBoard({ trip, onEditItem, onAddItem }: TripBoardProps) {
         // Add to target
         const targetDay = { ...newDays[overDayIndex] }
         const targetIndex = overItemIndex >= 0 ? overItemIndex : targetDay.items.length
-        targetDay.items.splice(targetIndex, 0, { ...movedItem, tripDayId: overDay.id })
+        targetDay.items.splice(targetIndex, 0, { ...movedItem })
         newDays[overDayIndex] = targetDay
 
         return newDays

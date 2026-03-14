@@ -13,7 +13,7 @@ type UserState = {
   signIn: (data: SignInResponse) => void
   signOut: () => Promise<void>
   updateProfile: (profile: Partial<UserProfile>) => void
-  initialize: () => void
+  initialize: () => Promise<void>
   setLoading: (loading: boolean) => void
 }
 

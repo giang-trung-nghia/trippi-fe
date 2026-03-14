@@ -75,13 +75,13 @@ export function TripDayColumn({
 
         {/* Day Summary */}
         <div className="flex items-center gap-4 mt-3 text-xs">
-          {day.totalEstimatedCost > 0 && (
+          {day.totalEstimatedCost && day.totalEstimatedCost > 0 && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <DollarSign className="size-3" />
               <span>${day.totalEstimatedCost.toFixed(0)}</span>
             </div>
           )}
-          {day.totalDuration > 0 && (
+          {day.totalDuration && day.totalDuration > 0 && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <Clock className="size-3" />
               <span>

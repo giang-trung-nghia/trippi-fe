@@ -14,6 +14,7 @@ export const mockTrip: Trip = {
   startDate: "2024-12-15",
   endDate: "2024-12-18",
   status: TripStatus.PLANNING,
+  budget: 0,
   totalEstimatedCost: 450,
   totalActualCost: 0,
   totalDays: 4,

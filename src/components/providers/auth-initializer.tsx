@@ -13,7 +13,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
-    initialize().finally(() => setIsInitialized(true))
+    void initialize().finally(() => setIsInitialized(true))
   }, [initialize])
 
   // Show loading only on first mount
