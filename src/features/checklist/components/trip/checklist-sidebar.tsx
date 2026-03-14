@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
@@ -9,7 +9,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { Plus } from "lucide-react"
+import { Plus, ChevronDown, ChevronUp } from "lucide-react"
 import { useChecklistTripsByTripId } from "@/features/checklist/hooks/use-checklist-mutations"
 import { TripChecklistCard } from "./trip-checklist-card"
 import { AddChecklistSourceDialog } from "./add-checklist-source-dialog"
@@ -27,9 +27,56 @@ export function ChecklistSidebar({
   onClose,
 }: ChecklistSidebarProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [userCollapsedAll, setUserCollapsedAll] = useState(false)
 
   // Fetch checklists for this trip with full item details
   const { data: tripChecklists, isLoading } = useChecklistTripsByTripId(tripId, true)
+
+  // Derive effective expanded set: empty + not user-collapsed-all => all expanded
+  const effectiveExpandedIds = useMemo(() => {
+    if (
+      tripChecklists?.length &&
+      expandedIds.size === 0 &&
+      !userCollapsedAll
+    ) {
+      return new Set(tripChecklists.map((c) => c.id))
+    }
+    return expandedIds
+  }, [tripChecklists, expandedIds, userCollapsedAll])
+
+  const allExpanded =
+    tripChecklists != null &&
+    tripChecklists.length > 0 &&
+    effectiveExpandedIds.size >= tripChecklists.length
+
+  const toggleExpandAll = useCallback(() => {
+    if (!tripChecklists?.length) return
+    if (allExpanded) {
+      setUserCollapsedAll(true)
+      setExpandedIds(new Set())
+    } else {
+      setUserCollapsedAll(false)
+      setExpandedIds(new Set(tripChecklists.map((c) => c.id)))
+    }
+  }, [tripChecklists, allExpanded])
+
+  const handleCardOpenChange = useCallback(
+    (checklistId: string, open: boolean) => {
+      setExpandedIds((prev) => {
+        const base =
+          prev.size === 0 &&
+          !userCollapsedAll &&
+          tripChecklists?.length
+            ? new Set(tripChecklists.map((c) => c.id))
+            : new Set(prev)
+        if (open) base.add(checklistId)
+        else base.delete(checklistId)
+        return base
+      })
+    },
+    [userCollapsedAll, tripChecklists]
+  )
 
   return (
     <>
@@ -40,8 +87,23 @@ export function ChecklistSidebar({
           className="w-full md:w-[400px] p-0 flex flex-col gap-0 min-h-0 h-full z-[100]"
         >
           <SheetHeader className="px-4 md:px-6 py-3 border-b shrink-0">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <SheetTitle className="text-base">Checklists</SheetTitle>
+              {tripChecklists && tripChecklists.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={toggleExpandAll}
+                  aria-label={allExpanded ? "Collapse all" : "Expand all"}
+                >
+                  {allExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
             </div>
           </SheetHeader>
 
@@ -60,6 +122,8 @@ export function ChecklistSidebar({
                       key={checklist.id}
                       checklist={checklist}
                       tripId={tripId}
+                      isOpen={effectiveExpandedIds.has(checklist.id)}
+                      onOpenChange={(open) => handleCardOpenChange(checklist.id, open)}
                     />
                   ))
                 )}

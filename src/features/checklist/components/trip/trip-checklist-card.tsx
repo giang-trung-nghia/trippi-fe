@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import * as Collapsible from "@radix-ui/react-collapsible"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import * as Collapsible from "@radix-ui/react-collapsible";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,46 +18,55 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { ChevronDown, ChevronRight, MoreVertical, Trash2 } from "lucide-react"
-import { ChecklistProgress } from "./checklist-progress"
-import { ChecklistItemRow } from "./checklist-item-row"
-import { AddChecklistItemForm } from "./add-checklist-item-form"
-import { useDeleteChecklistTrip } from "@/features/checklist/hooks/use-checklist-mutations"
-import { getChecklistTypeIcon } from "@/features/checklist/constants"
-import { toast } from "@/lib/toast"
-import type { ChecklistTrip } from "@/types/checklist"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/alert-dialog";
+import { ChevronDown, ChevronRight, MoreVertical, Trash2 } from "lucide-react";
+import { ChecklistProgress } from "./checklist-progress";
+import { ChecklistItemRow } from "./checklist-item-row";
+import { AddChecklistItemForm } from "./add-checklist-item-form";
+import { useDeleteChecklistTrip } from "@/features/checklist/hooks/use-checklist-mutations";
+import { getChecklistTypeIcon } from "@/features/checklist/constants";
+import { toast } from "@/lib/toast";
+import type { ChecklistTrip } from "@/types/checklist";
+import { cn } from "@/lib/utils";
 
 type TripChecklistCardProps = {
-  checklist: ChecklistTrip
-  tripId: string
-}
+  checklist: ChecklistTrip;
+  tripId: string;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
 
 export function TripChecklistCard({
   checklist,
   tripId,
+  isOpen: controlledOpen,
+  onOpenChange,
 }: TripChecklistCardProps) {
-  const [isOpen, setIsOpen] = useState(true) // Default expanded
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const deleteMutation = useDeleteChecklistTrip(tripId)
+  const [internalOpen, setInternalOpen] = useState(true);
+  const isControlled = controlledOpen !== undefined;
+  const isOpen = isControlled ? controlledOpen : internalOpen;
+  const setIsOpen = isControlled
+    ? (onOpenChange ?? (() => {}))
+    : setInternalOpen;
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const deleteMutation = useDeleteChecklistTrip(tripId);
 
-  const totalItems = checklist.items?.length || 0
+  const totalItems = checklist.items?.length || 0;
   const checkedItems =
-    checklist.items?.filter((item) => item.isChecked).length || 0
+    checklist.items?.filter((item) => item.isChecked).length || 0;
   const typeIcon = getChecklistTypeIcon(
-    checklist.checklistUser?.template?.type || "OTHER"
-  )
+    checklist.checklistUser?.template?.type || "OTHER",
+  );
 
   const handleDelete = async () => {
     try {
-      await deleteMutation.mutateAsync(checklist.id)
-      toast.success("Checklist deleted successfully")
-      setDeleteDialogOpen(false)
+      await deleteMutation.mutateAsync(checklist.id);
+      toast.success("Checklist deleted successfully");
+      setDeleteDialogOpen(false);
     } catch {
-      toast.error("Failed to delete checklist")
+      toast.error("Failed to delete checklist");
     }
-  }
+  };
 
   return (
     <>
@@ -90,55 +99,50 @@ export function TripChecklistCard({
                     {checklist.name}
                   </h3>
                 </div>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 shrink-0"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <MoreVertical className="h-3.5 w-3.5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => setDeleteDialogOpen(true)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span>Delete</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground">
+                    {checkedItems}/{totalItems}
+                  </span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreVertical className="h-3.5 w-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => setDeleteDialogOpen(true)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>Delete</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-
-              {isOpen ? (
-                <ChecklistProgress
-                  totalItems={totalItems}
-                  checkedItems={checkedItems}
-                />
-              ) : (
-                <span className="text-xs text-muted-foreground">
-                  {checkedItems}/{totalItems}
-                </span>
-              )}
             </div>
           </div>
         </div>
 
-        <Collapsible.Content className={cn("overflow-hidden", isOpen && "border-t")}>
+        <Collapsible.Content
+          className={cn("overflow-hidden", isOpen && "border-t")}
+        >
           <div className="p-2 space-y-0">
-            {checklist.items && checklist.items.length > 0 && (
+            {checklist.items &&
+              checklist.items.length > 0 &&
               checklist.items.map((item) => (
                 <ChecklistItemRow
                   key={item.id}
                   item={item}
                   checklistId={checklist.id}
                 />
-              ))
-            )}
+              ))}
             <AddChecklistItemForm checklistId={checklist.id} />
           </div>
         </Collapsible.Content>
@@ -166,5 +170,5 @@ export function TripChecklistCard({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }
