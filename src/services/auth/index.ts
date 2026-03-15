@@ -8,6 +8,19 @@ export const signInWithEmail = async (email: string, password: string): Promise<
   return response.data
 }
 
+export const signUpWithEmail = async (
+  email: string,
+  password: string,
+  name?: string
+): Promise<SignInResponse> => {
+  const response = await httpClient.post<SignInResponse>(
+    "/auth/sign-up",
+    { email, password, name: name ?? email.split("@")[0] },
+    { withCredentials: true }
+  )
+  return response.data
+}
+
 export const signInWithGoogle = async (): Promise<SignInResponse> => {
   const response = await httpClient.get<SignInResponse>("/auth/google/sign-in", {
     withCredentials: true

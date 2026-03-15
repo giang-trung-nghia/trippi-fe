@@ -15,7 +15,8 @@ type SignInPageProps = {
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const resolvedParams = (await searchParams) ?? {};
   const rawMode = resolvedParams.mode;
-  const mode = Array.isArray(rawMode) ? rawMode[0] : rawMode;
+  const mode = (Array.isArray(rawMode) ? rawMode[0] : rawMode) ?? "signin";
+  const authMode = mode === "signup" ? "signup" : "signin";
   const highlightEmail = mode === "email";
 
   return (
@@ -24,10 +25,12 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         <div className="space-y-2 text-center">
           <p className="text-sm font-medium text-primary">Trippi</p>
           <h1 className="text-3xl font-semibold tracking-tight">
-            Sign in or create an account
+            {authMode === "signup" ? "Create an account" : "Sign in"}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Choose the method that works best for you.
+            {authMode === "signup"
+              ? "Enter your details to get started."
+              : "Sign in or create an account to continue."}
           </p>
         </div>
 
@@ -41,15 +44,16 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         >
           <div className="space-y-1.5">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-              Create account by email
+              {authMode === "signup" ? "Sign up with email" : "Sign in with email"}
             </p>
             <p className="text-sm text-muted-foreground">
-              Use your email address to create a new Trippi account in just a
-              few minutes.
+              {authMode === "signup"
+                ? "Use your email to create a new Trippi account."
+                : "Use your email and password to sign in."}
             </p>
           </div>
 
-          <SignInForm />
+          <SignInForm mode={authMode} />
         </section>
 
         <section className="space-y-4 rounded-2xl border bg-white p-6 shadow-sm">
