@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { baseURL } from "@/configs/axios";
 
 type GoogleSignInButtonProps = {
   className?: string;
@@ -18,7 +19,7 @@ export function GoogleSignInButton({ className }: GoogleSignInButtonProps) {
 
     try {
       setIsLoading(true);
-      window.location.href = "http://localhost:8000/api/v1/auth/google/sign-in";
+      window.location.href = `${baseURL}/auth/google/sign-in`;
       return;
     } catch (error) {
       console.error("Failed to start Google sign-in", error);
